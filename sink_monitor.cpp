@@ -67,14 +67,14 @@ void SinkMonitor::read_tun() {
 	count = read(tun_fd, pkt.data, BUFFER_SIZE);
 	report_error(count);
 	pkt.data_len = count;
-	cout << "Successfully read data from the TUN device" << endl;
+	// cout << "Successfully read data from the TUN device" << endl;
 }
 
 void SinkMonitor::write_tun() {
 
 	count = write(tun_fd, pkt.data, pkt.data_len);
 	report_error(count);
-	cout << "Successfully written data into the TUN device" << endl;
+	// cout << "Successfully written data into the TUN device" << endl;
 }
 
 void SinkMonitor::configure_topgw() {
@@ -121,9 +121,9 @@ void* start_monitor(void *arg) {
 	int status;
 	fd_set rd_set;
 
-	struct ip *iphdr = (ip*)malloc(20 * sizeof(u_int8_t));
-	struct tcphdr *tcp_hdr = (tcphdr*)malloc(20 * sizeof(u_int8_t)); 
-	char *sink = (char*)malloc(INET_ADDRSTRLEN);
+	struct ip *iphdr = allocate_ip_mem(20);
+	struct tcphdr *tcp_hdr = allocate_tcp_mem(20);
+	char *sink = allocate_str_mem(INET_ADDRSTRLEN);
 
 	cout << "Successfully started the Sink Monitor" << endl;
 	tun_fd = sink_monitor.tun_fd;
@@ -176,4 +176,7 @@ void* start_monitor(void *arg) {
 			//cout << "Successfully written to private sink" << endl << endl;
 		}
 	}
+	free(iphdr);
+	free(tcp_hdr);
+	free(sink);
 }
