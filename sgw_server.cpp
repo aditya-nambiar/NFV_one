@@ -18,8 +18,12 @@ void* process_traffic(void *arg) {
 	if (type == 1) {
 		handle_cdata(sgw_server);
 	}
-	if (type == 2) {
+	else if (type == 2) {
 		handle_udata(sgw_server);
+	}
+	else {
+		cout << "Invalid type number has been received at SGW server" << endl;
+		handle_exceptions();
 	}
 }
 

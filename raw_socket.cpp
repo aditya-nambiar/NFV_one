@@ -53,6 +53,8 @@ void RawSocket::bind_client() {
 	
 	raw_socket = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 	report_error(raw_socket);
+	status = setsockopt(raw_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);	
 	setsockopt(raw_socket, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on));		
 	status = ioctl(raw_socket, SIOCGIFINDEX, &ifr);
 	report_error(status, "IOCTL failed to find interface");

@@ -241,6 +241,10 @@ void SGWc::delete_session_req_from_mme(Server &sgw_server) {
 	if (type == 3) {
 		cout << "Detach request for UE - " << ue_num << " has been received at SGW" << endl;
 	}
+	else {
+		cout << "Invalid Detach request for UE - " << ue_num << " has been received at SGW" << endl;
+		handle_exceptions();
+	}
 }
 
 void SGWc::copy_pkts(Packet &from_pkt, Packet &to_pkt) {
@@ -272,6 +276,10 @@ void SGWc::delete_session_res_from_pgw() {
 	cout << "Response is " << reply << endl;
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "PGW has successfully deallocated resources for UE - " << ue_num << endl;
+	}
+	else {
+		cout << "Detach process has not been successful at PGW for UE - " << ue_num << endl;
+		handle_exceptions();
 	}
 }
 
