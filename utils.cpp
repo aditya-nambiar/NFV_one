@@ -76,23 +76,33 @@ void check_conn(int &status) {
 
 void report_error(int arg) {
 
-	if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+	if (arg < 0){
 		cout << "***********************" << endl;
-		cout << "Receive time exceeded. Killing the thread" << endl;
-		perror("ERROR");
-		pthread_exit(NULL);
+		if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+			cout << "Receive time exceeded. Killing the thread" << endl;
+		}
+		else {
+			perror("ERROR");
+			cout << "Killing the thread" << endl;
+		}
 		cout << "***********************" << endl;		
+		pthread_exit(NULL);			
 	}
 }
 
 void report_error(int arg, const char *message) {
 
-	if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+	if (arg < 0){
 		cout << "***********************" << endl;
-		cout << "Receive time exceeded. Killing the thread" << endl;
-		perror(message);
-		pthread_exit(NULL);
+		if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+			cout << "Receive time exceeded. Killing the thread" << endl;
+		}
+		else {
+			perror(message);
+			cout << "Killing the thread" << endl;
+		}
 		cout << "***********************" << endl;		
+		pthread_exit(NULL);			
 	}
 }
 
