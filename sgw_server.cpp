@@ -1,10 +1,13 @@
 #include "sgw_server.h"
 
 void* process_traffic(void *arg) {
-	int type;
 	ClientDetails entity = *(ClientDetails*)arg;
 	Server sgw_server;
+	int status;
+	int type;
 
+	status = setsockopt(sgw_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	sgw_server.fill_server_details(g_freeport, g_sgw1_addr);
 	sgw_server.bind_server();
 	sgw_server.client_sock_addr = entity.client_sock_addr;
@@ -15,10 +18,13 @@ void* process_traffic(void *arg) {
 	if (type == 1) {
 		handle_cdata(sgw_server);
 	}
-	if (type == 2) {
+	else if (type == 2) {
 		handle_udata(sgw_server);
 	}
-	// time_check(g_start_time, g_req_duration);
+	else {
+		cout << "Invalid type number has been received at SGW server" << endl;
+		handle_exceptions();
+	}
 }
 
 void handle_cdata(Server &sgw_server) {

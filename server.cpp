@@ -141,7 +141,6 @@ void Server::read_data() {
 	status = recvfrom(server_socket, pkt.data, BUFFER_SIZE, 0, (sockaddr*)&client_sock_addr, &g_addr_len);
 	report_error(status);
 	pkt.data_len = status;
-	//check_conn(status);
 }
 
 void Server::write_data() {

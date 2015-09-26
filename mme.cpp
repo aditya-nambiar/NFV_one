@@ -139,7 +139,10 @@ void MME::set_pgw() {
 }
 
 void MME::startup_mme_server(ClientDetails &entity) {
+	int status;
 
+	status = setsockopt(mme_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	mme_server.fill_server_details(g_freeport, g_mme_addr);
 	mme_server.bind_server();
 	mme_server.client_sock_addr = entity.client_sock_addr;
@@ -204,6 +207,7 @@ void MME::authenticate_ue() {
 		mme_server.pkt.make_data_packet();
 		mme_server.write_data();
 		cout << "Authentication is not successful for UE - " << ue_num << endl;
+		handle_exceptions();
 	}
 }
 
@@ -238,7 +242,7 @@ void MME::create_session_res_from_sgw() {
 	}
 	else {
 		cout << "Create session request failed: Please disconnect and connect again" << endl;
-	// 	handle_exceptions();
+		handle_exceptions();
 	}
 }
 
@@ -270,7 +274,7 @@ void MME::modify_session_res_from_sgw() {
 	}
 	else {
 		cout << "Modify session request failed: Please disconnect and connect again" << endl;
-	// 	handle_exceptions();		
+		handle_exceptions();		
 	}
 }
 
@@ -291,8 +295,8 @@ void MME::detach_req_from_ue() {
 		cout << "Detach request has been received successfully at MME for UE - " << ue_num << endl;
 	}
 	else {
-		cout << "Invalid Detach type num - " << type << " : Please disconnect and connect again" << "Packet len is " << mme_server.pkt.data_len << endl;
-	//	handle_exceptions();
+		cout << "Invalid Detach type num - " << type << " : Please disconnect and connect again" << endl;
+		handle_exceptions();
 	}
 }
 
@@ -317,7 +321,7 @@ void MME::delete_session_res_from_sgw() {
 	}
 	else {
 		cout << "Detach process failure at SGW: UE - " << ue_num << ", Reply = " << reply << ". Please disconnect and connect again" << endl;
-	// 	handle_exceptions();
+		handle_exceptions();
 	}
 }
 

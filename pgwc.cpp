@@ -153,6 +153,10 @@ void PGWc::delete_session_req_from_sgw(Server &pgw_server) {
 	if (type == 3) {
 		cout << "Detach request for UE - " << ue_num << " has been received at PGW" << endl;
 	}
+	else {
+		cout << "Invalid Detach request for UE - " << ue_num << " has been received at PGW" << endl;
+		handle_exceptions();
+	}
 }
 
 void PGWc::delete_session_res_to_sgw(Server &pgw_server) {

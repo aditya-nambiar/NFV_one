@@ -3,6 +3,7 @@
 
 #include "utils.h"
 
+#define IP_MAXPACKET 65535
 #define GTPC_LEN 4
 #define GTPU_LEN 4
 #define IP_LEN 20

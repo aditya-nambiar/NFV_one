@@ -83,7 +83,10 @@ void PGWu::configure_raw_client() {
 }
 
 void PGWu::configure_server_for_sink() {
+	int status;
 
+	status = setsockopt(for_sink.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	for_sink.fill_server_details(g_pgw_server_for_sink_port, g_pgw_server_for_sink_addr);
 	for_sink.bind_server();
 	cout << "Server for sink configured successfully" << endl;
