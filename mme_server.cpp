@@ -8,14 +8,14 @@ void* process_req(void *arg) {
 	mme.startup_mme_server(entity);
 	mme.set_ue_num();
 	attach_ue(mme);
-	detach_ue(mme);
+	// detach_ue(mme);
 }
 
 void attach_ue(MME &mme) {
 
 	recv_req_from_ue(mme);
 	authenticate_ue(mme);
-	setup_tunnel(mme);
+	// setup_tunnel(mme);
 }
 
 void recv_req_from_ue(MME &mme) {

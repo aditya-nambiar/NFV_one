@@ -66,8 +66,9 @@ void* generate_traffic(void *arg) {
 		to_mme.fill_server_details(g_mme_port, g_mme_addr);
 		to_mme.connect_with_server(ue_num);	
 		attach(ue, to_mme);
-		send_traffic(ue);
-		detach(ue, to_mme);
+		// send_traffic(ue);
+		// detach(ue, to_mme);
+		usleep(100);
 		time_check(g_start_time, g_req_duration, time_exceeded);
 		if (time_exceeded) {
 			break;
@@ -82,8 +83,8 @@ void attach(UE &ue, Client &to_mme) {
 
 	ue.authenticate(to_mme);
 	enodeb_uteid = g_enodeb.generate_uteid(ue.num);
-	ue.setup_tunnel(to_mme, enodeb_uteid, tun_data.sgw_uteid, tun_data.sgw_port, tun_data.sgw_addr);
-	g_enodeb.fill_tun_table(ue.ip_addr_str, tun_data);
+	// ue.setup_tunnel(to_mme, enodeb_uteid, tun_data.sgw_uteid, tun_data.sgw_port, tun_data.sgw_addr);
+	// g_enodeb.fill_tun_table(ue.ip_addr_str, tun_data);
 }
 
 void send_traffic(UE &ue) {

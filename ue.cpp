@@ -69,6 +69,7 @@ void UE::authenticate(Client &to_mme) {
 	to_mme.pkt.make_data_packet();
 	to_mme.write_data();
 	to_mme.read_data();
+	cout << "IMSI is "<< imsi << ". MSISDN is " << msisdn << endl;
 	memcpy(&autn, to_mme.pkt.data, sizeof(autn));
 	memcpy(&rand, to_mme.pkt.data + sizeof(autn), sizeof(rand));
 	res = get_autn_res(autn, rand);
