@@ -33,7 +33,7 @@ const char *g_public_sink_addr = "192.168.1.78";
 const char *g_private_sink_addr = "192.168.100.2";
 
 socklen_t g_addr_len = sizeof(sockaddr_in);
-timeval g_timeout = {2, 0};
+struct timeval g_timeout = {5, 0};
 
 ClientDetails::ClientDetails() {
 
@@ -72,23 +72,27 @@ ClientDetails::~ClientDetails() {
 
 void check_conn(int &status) {
 
-	if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINPROGRESS)
-		status = 1000;
 }
 
 void report_error(int arg) {
 
-	if (arg < 0) {
+	if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+		cout << "***********************" << endl;
+		cout << "Receive time exceeded. Killing the thread" << endl;
 		perror("ERROR");
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
+		cout << "***********************" << endl;		
 	}
 }
 
 void report_error(int arg, const char *message) {
 
-	if (arg < 0) {
+	if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+		cout << "***********************" << endl;
+		cout << "Receive time exceeded. Killing the thread" << endl;
 		perror(message);
-		exit(EXIT_FAILURE);
+		pthread_exit(NULL);
+		cout << "***********************" << endl;		
 	}
 }
 
@@ -250,8 +254,6 @@ void time_check(time_t &start_time, double &duration_time, bool &time_exceeded) 
 
 void handle_exceptions() {
 
-	exit(1);
-	while(1) {
-
-	}
+	cout << "Exception: Possible because of garbage data" << endl;
+	pthread_exit(NULL);
 }

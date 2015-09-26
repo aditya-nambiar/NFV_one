@@ -82,10 +82,10 @@ void UE::authenticate(Client &to_mme) {
 	cout << "This is the message - " << reply << endl;
 	if (strcmp((const char*)reply, "OK") == 0)
 		print_message("Authentication Successful for UE - ", num);
-	// else {
-	// 	cout << "Authentication is not successful for UE - " << num << endl;
-	// 	handle_exceptions();
-	// }
+	else {
+		cout << "Authentication is not successful for UE - " << num << endl;
+		handle_exceptions();
+	}
 }
 
 unsigned long long UE::get_autn_res(unsigned long long autn, unsigned long long rand) {
@@ -183,6 +183,10 @@ void UE::recv_detach_res(Client &to_mme) {
 	memcpy(reply, to_mme.pkt.data, to_mme.pkt.data_len);
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "UE - " << num << " has successfully detached from EPC" << endl;
+	}
+	else {
+		cout << "Detach request has not been successful for UE - " << num << endl;
+		handle_exceptions();
 	}
 }
 

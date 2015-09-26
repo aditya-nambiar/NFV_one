@@ -61,7 +61,7 @@ void* generate_traffic(void *arg) {
 	while (1) {
 		Client to_mme;
 		UE ue(ue_num);
-				
+
 		to_mme.bind_client();
 		to_mme.fill_server_details(g_mme_port, g_mme_addr);
 		to_mme.connect_with_server(ue_num);	
@@ -127,7 +127,6 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < g_total_connections; i++) {
 		pthread_join(tid[i],NULL);
 	}
-	// pthread_join(mon_tid, NULL);
 	cout << "Requested duration has ended. Finishing the program." << endl;
 	return 0;
 }
