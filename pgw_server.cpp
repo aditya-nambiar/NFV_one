@@ -52,10 +52,10 @@ void handle_cdata(Server &pgw_server) {
 	pgwc.fill_tun_ctable();
 	pgwu.fill_tun_utable(g_ip_table[pgwc.ue_num], tun_udata);
 	cout << "Tunnel created from PGW to SGW for UE - " << pgwc.ue_num << endl;
-	pgwc.delete_session_req_from_sgw(pgw_server);
-	pgwc.delete_session_res_to_sgw(pgw_server);
-	pgwu.erase_tun_utable(g_ip_table[pgwc.ue_num]);
-	cout << "PGW has successfully deallocated resources for UE - " << pgwc.ue_num << endl;
+	// pgwc.delete_session_req_from_sgw(pgw_server);
+	// pgwc.delete_session_res_to_sgw(pgw_server);
+	// pgwu.erase_tun_utable(g_ip_table[pgwc.ue_num]);
+	// cout << "PGW has successfully deallocated resources for UE - " << pgwc.ue_num << endl;
 }
 
 void handle_udata(Server &pgw_server) {
