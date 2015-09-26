@@ -21,10 +21,13 @@ void* monitor_traffic(void *arg) {
 }
 
 void* process_traffic(void *arg) {
-	int type;
 	ClientDetails entity = *(ClientDetails*)arg;
 	Server pgw_server;
+	int status;
+	int type;
 
+	status = setsockopt(pgw_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	pgw_server.fill_server_details(g_freeport, g_pgw_addr);
 	pgw_server.bind_server();
 	pgw_server.client_sock_addr = entity.client_sock_addr;
@@ -35,9 +38,13 @@ void* process_traffic(void *arg) {
 	if (type == 1) {
 		handle_cdata(pgw_server);
 	}
-	if (type == 2) {
+	else if (type == 2) {
 		handle_udata(pgw_server);
 	}
+	else {
+		cout << "Invalid type number has been received at PGW server" << endl;
+		handle_exceptions();
+	}	
 }
 
 void handle_cdata(Server &pgw_server) {

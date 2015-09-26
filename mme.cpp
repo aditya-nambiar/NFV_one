@@ -139,7 +139,10 @@ void MME::set_pgw() {
 }
 
 void MME::startup_mme_server(ClientDetails &entity) {
+	int status;
 
+	status = setsockopt(mme_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	mme_server.fill_server_details(g_freeport, g_mme_addr);
 	mme_server.bind_server();
 	mme_server.client_sock_addr = entity.client_sock_addr;
@@ -199,6 +202,7 @@ void MME::authenticate_ue() {
 		mme_server.pkt.make_data_packet();
 		mme_server.write_data();
 		cout << "Authentication is not successful for UE - " << ue_num << endl;
+		handle_exceptions();
 	}
 }
 
@@ -231,10 +235,10 @@ void MME::create_session_res_from_sgw() {
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "Create session request was successful for UE - " << ue_num << endl;
 	}
-	// else {
-	// 	cout << "Create session request failed: Please disconnect and connect again" << endl;
-	// 	handle_exceptions();
-	// }
+	else {
+		cout << "Create session request failed: Please disconnect and connect again" << endl;
+		handle_exceptions();
+	}
 }
 
 void MME::recv_enodeb() {
@@ -263,10 +267,10 @@ void MME::modify_session_res_from_sgw() {
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "Modify Session Request was successful for UE - " << ue_num << endl;
 	}
-	// else {
-	// 	cout << "Modify session request failed: Please disconnect and connect again" << endl;
-	// 	handle_exceptions();		
-	// }
+	else {
+		cout << "Modify session request failed: Please disconnect and connect again" << endl;
+		handle_exceptions();		
+	}
 }
 
 void MME::send_enodeb() {
@@ -285,10 +289,10 @@ void MME::detach_req_from_ue() {
 	if (type == 3) {
 		cout << "Detach request has been received successfully at MME for UE - " << ue_num << endl;
 	}
-	// else {
-	// 	cout << "Invalid Detach type num - " << type << " : Please disconnect and connect again" << endl;
-	// 	handle_exceptions();
-	// }
+	else {
+		cout << "Invalid Detach type num - " << type << " : Please disconnect and connect again" << endl;
+		handle_exceptions();
+	}
 }
 
 void MME::delete_session_req_to_sgw() {
@@ -310,10 +314,10 @@ void MME::delete_session_res_from_sgw() {
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "MME has received successful detach response for UE - " << ue_num << endl;
 	}
-	// else {
-	// 	cout << "Detach process failure at SGW: UE - " << ue_num << ", Reply = " << reply << ". Please disconnect and connect again" << endl;
-	// 	handle_exceptions();
-	// }
+	else {
+		cout << "Detach process failure at SGW: UE - " << ue_num << ", Reply = " << reply << ". Please disconnect and connect again" << endl;
+		handle_exceptions();
+	}
 }
 
 void MME::detach_res_to_ue() {

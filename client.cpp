@@ -53,6 +53,8 @@ void Client::bind_client() {
 	
 	client_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	report_error(client_socket, "Error in creating sockets ");	
+	status = setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	status = setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &g_reuse, sizeof(int));	
 	report_error(status, "At Client side - Error in setting socket options");
 	socklen_t len = sizeof(sockaddr_in);
@@ -102,7 +104,6 @@ void Client::read_data() {
 	status = recvfrom(client_socket, pkt.data, BUFFER_SIZE, 0, (sockaddr*)&server_sock_addr, &g_addr_len);
 	report_error(status);
 	pkt.data_len = status;
-	//check_conn(status);
 }
 
 void Client::write_data() {

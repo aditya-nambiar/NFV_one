@@ -89,7 +89,10 @@ HSS::HSS(HSS &&src_obj)
 }
 
 void HSS::startup_hss_server(ClientDetails &entity) {
+	int status;
 
+	status = setsockopt(hss_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	hss_server.fill_server_details(g_freeport, g_hss_addr);
 	hss_server.bind_server();
 	hss_server.client_sock_addr = entity.client_sock_addr;
@@ -108,7 +111,7 @@ void HSS::handle_db_error() {
 	 if (query_res == 0) {
 		cout<<"ERROR: No rows fetched for this query - ";
 		cout<<query<<endl;
-		exit(EXIT_FAILURE);
+		report_error(-1);
 	}
 }
 
