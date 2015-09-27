@@ -109,8 +109,8 @@ void HSS::setup_db_client() {
 void HSS::handle_db_error() {
 
 	 if (query_res == 0) {
-		cout<<"ERROR: No rows fetched for this query - ";
-		cout<<query<<endl;
+		cout << "ERROR: No rows fetched for this query - ";
+		cout << query << endl;
 		report_error(-1);
 	}
 }
@@ -120,7 +120,6 @@ void HSS::recv_req_from_mme() {
 	hss_server.read_data();
 	memcpy(&ue_data.imsi, hss_server.pkt.data, sizeof(unsigned long long));
 	memcpy(&ue_data.msisdn, hss_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));	
-	cout << "IMSI is " << ue_data.imsi << ". MSISDN is " << ue_data.msisdn << endl;
 }
 
 void HSS::set_key_id() {
