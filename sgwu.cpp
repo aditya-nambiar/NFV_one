@@ -181,8 +181,8 @@ void SGWu::recv_pgw(int &pgw_num) {
 	copy_data(to_pgw[pgw_num].pkt);
 	pkt.rem_gtpu_hdr();
 
-	memcpy(iphdr, pkt.data, 20 * sizeof(uint8_t));
-	memcpy(tcp_hdr, pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
+	memmove(iphdr, pkt.data, 20 * sizeof(uint8_t));
+	memmove(tcp_hdr, pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
 	inet_ntop(AF_INET, &(iphdr->ip_dst), sink, INET_ADDRSTRLEN);
 	// cout << endl << "UE IP is " << sink << endl;
 	// cout << "TCP destination port is " << ntohs(tcp_hdr->th_dport) << endl;	

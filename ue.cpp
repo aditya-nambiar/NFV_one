@@ -70,8 +70,8 @@ void UE::authenticate(Client &to_mme) {
 	to_mme.write_data();
 	to_mme.read_data();
 	cout << "IMSI is "<< imsi << ". MSISDN is " << msisdn << endl;
-	memcpy(&autn, to_mme.pkt.data, sizeof(autn));
-	memcpy(&rand, to_mme.pkt.data + sizeof(autn), sizeof(rand));
+	memmove(&autn, to_mme.pkt.data, sizeof(autn));
+	memmove(&rand, to_mme.pkt.data + sizeof(autn), sizeof(rand));
 	res = get_autn_res(autn, rand);
 	cout << "AUTN is " << autn << ", RAND is " << rand << " and the result is " << res << endl;
 	to_mme.pkt.clear_data();
@@ -79,7 +79,7 @@ void UE::authenticate(Client &to_mme) {
 	to_mme.pkt.make_data_packet();
 	to_mme.write_data();
 	to_mme.read_data();
-	memcpy(reply, to_mme.pkt.data, to_mme.pkt.data_len);
+	memmove(reply, to_mme.pkt.data, to_mme.pkt.data_len);
 	cout << "This is the message - " << reply << endl;
 	if (strcmp((const char*)reply, "OK") == 0)
 		print_message("Authentication Successful for UE - ", num);
@@ -103,8 +103,8 @@ void UE::setup_tunnel(Client &to_mme, uint16_t &enodeb_uteid, uint16_t &sgw_utei
 	to_mme.pkt.make_data_packet();
 	to_mme.write_data();
 	to_mme.read_data();
-	memcpy(&sgw_uteid, to_mme.pkt.data, sizeof(uint16_t));
-	memcpy(ip_addr, to_mme.pkt.data + sizeof(uint16_t), INET_ADDRSTRLEN);
+	memmove(&sgw_uteid, to_mme.pkt.data, sizeof(uint16_t));
+	memmove(ip_addr, to_mme.pkt.data + sizeof(uint16_t), INET_ADDRSTRLEN);
 	ip_addr_str.assign(ip_addr);
 	sgw_port = g_sgw1_port;
 	sgw_addr.assign(g_sgw1_addr);
@@ -181,7 +181,7 @@ void UE::send_detach_req(Client &to_mme) {
 void UE::recv_detach_res(Client &to_mme) {
 
 	to_mme.read_data();
-	memcpy(reply, to_mme.pkt.data, to_mme.pkt.data_len);
+	memmove(reply, to_mme.pkt.data, to_mme.pkt.data_len);
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "UE - " << num << " has successfully detached from EPC" << endl;
 	}

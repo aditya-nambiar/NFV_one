@@ -147,8 +147,8 @@ void* start_monitor(void *arg) {
 			to_pgw.pkt.clear_data();
 			to_pgw.pkt.fill_data(0, sink_monitor.pkt.data_len, sink_monitor.pkt.data);			
 			
-			memcpy(iphdr, to_pgw.pkt.data, 20 * sizeof(uint8_t));
-			memcpy(tcp_hdr, to_pgw.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
+			memmove(iphdr, to_pgw.pkt.data, 20 * sizeof(uint8_t));
+			memmove(tcp_hdr, to_pgw.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
 			inet_ntop(AF_INET, &(iphdr->ip_dst), sink, INET_ADDRSTRLEN);
 			//cout << "At Sink Monitor(From Sink To PGW): UE IP is " << sink << endl;
 			//cout << "TCP destination port is " << ntohs(tcp_hdr->th_dport) << endl;
@@ -165,8 +165,8 @@ void* start_monitor(void *arg) {
 			monitor.read_data();
 			sink_monitor.copy_to_pkt(monitor.pkt);
 			
-			memcpy(iphdr, sink_monitor.pkt.data, 20 * sizeof(uint8_t));
-			memcpy(tcp_hdr, sink_monitor.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
+			memmove(iphdr, sink_monitor.pkt.data, 20 * sizeof(uint8_t));
+			memmove(tcp_hdr, sink_monitor.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
 			inet_ntop(AF_INET, &(iphdr->ip_dst), sink, INET_ADDRSTRLEN);
 			//cout << "At Sink Monitor: Sink IP is " << sink << endl;
 			//cout << "TCP destination port is " << ntohs(tcp_hdr->th_dport) << endl;	

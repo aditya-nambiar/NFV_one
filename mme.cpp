@@ -171,17 +171,17 @@ void MME::fetch_ue_data() {
 	unsigned long long imsi;
 	unsigned long long msisdn;
 
-	memcpy(&imsi, mme_server.pkt.data, sizeof(unsigned long long));
-	memcpy(&msisdn, mme_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));
+	memmove(&imsi, mme_server.pkt.data, sizeof(unsigned long long));
+	memmove(&msisdn, mme_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));
 	cout << "IMSI is " << imsi << ". MSISDN is " << msisdn << " for UE - " << ue_num << endl;
 	to_hss.pkt.clear_data();
 	to_hss.pkt.fill_data(0, mme_server.pkt.data_len, mme_server.pkt.data);
 	to_hss.pkt.make_data_packet();
 	to_hss.write_data();
 	to_hss.read_data();	
-	memcpy(&autn_num, to_hss.pkt.data, sizeof(unsigned long long));
-	memcpy(&rand_num, to_hss.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));
-	memcpy(&autn_xres, to_hss.pkt.data + 2 * sizeof(unsigned long long), sizeof(unsigned long long));
+	memmove(&autn_num, to_hss.pkt.data, sizeof(unsigned long long));
+	memmove(&rand_num, to_hss.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));
+	memmove(&autn_xres, to_hss.pkt.data + 2 * sizeof(unsigned long long), sizeof(unsigned long long));
 }
 
 void MME::authenticate_ue() {
@@ -191,7 +191,7 @@ void MME::authenticate_ue() {
 	mme_server.pkt.make_data_packet();
 	mme_server.write_data();
 	mme_server.read_data();
-	memcpy(&autn_res, mme_server.pkt.data, sizeof(unsigned long long));
+	memmove(&autn_res, mme_server.pkt.data, sizeof(unsigned long long));
 	if (autn_xres == autn_res) {
 		strcpy(reply, "OK");
 		mme_server.pkt.clear_data();
@@ -235,8 +235,8 @@ void MME::create_session_res_from_sgw() {
 	cout << "Waiting to read Create Session Request response from SGW" << endl;
 	to_sgw.read_data();
 	to_sgw.pkt.rem_gtpc_hdr();
-	memcpy(&tun_data.sgw_cteid, to_sgw.pkt.data, sizeof(uint16_t));
-	memcpy(reply, to_sgw.pkt.data + sizeof(uint16_t), to_sgw.pkt.data_len - sizeof(uint16_t));
+	memmove(&tun_data.sgw_cteid, to_sgw.pkt.data, sizeof(uint16_t));
+	memmove(reply, to_sgw.pkt.data + sizeof(uint16_t), to_sgw.pkt.data_len - sizeof(uint16_t));
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "Create session request was successful for UE - " << ue_num << endl;
 	}
@@ -249,7 +249,7 @@ void MME::create_session_res_from_sgw() {
 void MME::recv_enodeb() {
 
 	mme_server.read_data();	
-	memcpy(&tun_data.enodeb_uteid, mme_server.pkt.data, sizeof(uint16_t));
+	memmove(&tun_data.enodeb_uteid, mme_server.pkt.data, sizeof(uint16_t));
 }
 
 void MME::modify_session_req_to_sgw() {
@@ -266,9 +266,9 @@ void MME::modify_session_res_from_sgw() {
 
 	to_sgw.read_data();
 	to_sgw.pkt.rem_gtpc_hdr();
-	memcpy(&tun_data.sgw_uteid, to_sgw.pkt.data, sizeof(uint16_t));
-	memcpy(ue_ip, to_sgw.pkt.data + sizeof(uint16_t), INET_ADDRSTRLEN);
-	memcpy(reply, to_sgw.pkt.data + sizeof(uint16_t) + INET_ADDRSTRLEN, to_sgw.pkt.data_len - sizeof(uint16_t) - INET_ADDRSTRLEN);
+	memmove(&tun_data.sgw_uteid, to_sgw.pkt.data, sizeof(uint16_t));
+	memmove(ue_ip, to_sgw.pkt.data + sizeof(uint16_t), INET_ADDRSTRLEN);
+	memmove(reply, to_sgw.pkt.data + sizeof(uint16_t) + INET_ADDRSTRLEN, to_sgw.pkt.data_len - sizeof(uint16_t) - INET_ADDRSTRLEN);
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "Modify Session Request was successful for UE - " << ue_num << endl;
 	}
@@ -290,7 +290,7 @@ void MME::send_enodeb() {
 void MME::detach_req_from_ue() {
 
 	mme_server.read_data();
-	memcpy(&type, mme_server.pkt.data, sizeof(int));	
+	memmove(&type, mme_server.pkt.data, sizeof(int));	
 	if (type == 3) {
 		cout << "Detach request has been received successfully at MME for UE - " << ue_num << endl;
 	}
@@ -317,7 +317,7 @@ void MME::delete_session_res_from_sgw() {
 	cout << "Read Delete session response from SGW for UE - " << ue_num << endl;	
 	to_sgw.pkt.rem_gtpc_hdr();
 	cout << "Removed GTP header of Delete session response from SGW for UE - " << ue_num << endl;	
-	memcpy(reply, to_sgw.pkt.data, to_sgw.pkt.data_len);
+	memmove(reply, to_sgw.pkt.data, to_sgw.pkt.data_len);
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "MME has received successful detach response for UE - " << ue_num << endl;
 	}

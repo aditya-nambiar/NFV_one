@@ -63,10 +63,10 @@ void RawSocket::bind_client() {
 }
 
 // void RawSocket::fill_traffic_details(Packet &arg_pkt) {
-// 	memcpy(pkt.packet, arg_pkt.data, arg_pkt.data_len * sizeof(uint8_t));
+// 	memmove(pkt.packet, arg_pkt.data, arg_pkt.data_len * sizeof(uint8_t));
 // 	pkt.packet_len = arg_pkt.data_len;
-// 	memcpy(&pkt.ip_hdr, pkt.packet, IP_LEN * sizeof(uint8_t));
-// 	memcpy(&pkt.udp_hdr, pkt.packet + IP_LEN * sizeof(uint8_t), UDP_LEN * sizeof(uint8_t));
+// 	memmove(&pkt.ip_hdr, pkt.packet, IP_LEN * sizeof(uint8_t));
+// 	memmove(&pkt.udp_hdr, pkt.packet + IP_LEN * sizeof(uint8_t), UDP_LEN * sizeof(uint8_t));
 // 	fill_src_details();
 // 	fill_dst_details();
 // }
@@ -97,7 +97,7 @@ void RawSocket::bind_client() {
 void RawSocket::fill_dst_details() {
 	struct tcphdr *tcp_hdr = allocate_tcp_mem(20);
 
-	memcpy(tcp_hdr, pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
+	memmove(tcp_hdr, pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
 	bzero((char*)&dst_sock_addr, sizeof(dst_sock_addr));
 	dst_sock_addr.sin_family = AF_INET;
 	dst_sock_addr.sin_port = tcp_hdr->th_dport;

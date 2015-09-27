@@ -14,7 +14,7 @@ void* process_traffic(void *arg) {
 	sgw_server.client_num = entity.num;
 	sgw_server.connect_with_client();
 	sgw_server.read_data();
-	memcpy(&type, sgw_server.pkt.data, sizeof(int));
+	memmove(&type, sgw_server.pkt.data, sizeof(int));
 	if (type == 1) {
 		handle_cdata(sgw_server);
 	}
@@ -104,5 +104,6 @@ int main(int argc, char *argv[]) {
 	sgw_server.fill_server_details(g_sgw1_port, g_sgw1_addr);
 	sgw_server.bind_server();
 	sgw_server.listen_accept();
+	cout << "Oops! Comes here" << endl;
 	return 0;
 }

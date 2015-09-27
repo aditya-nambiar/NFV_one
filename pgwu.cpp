@@ -111,8 +111,8 @@ void PGWu::send_sgw(Server &pgw_server) {
 	struct tcphdr *tcp_hdr = allocate_tcp_mem(20);
 	char *sink = allocate_str_mem(INET_ADDRSTRLEN);
 
-	memcpy(iphdr, for_sink.pkt.data, 20 * sizeof(uint8_t));
-	memcpy(tcp_hdr, for_sink.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
+	memmove(iphdr, for_sink.pkt.data, 20 * sizeof(uint8_t));
+	memmove(tcp_hdr, for_sink.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
 	inet_ntop(AF_INET, &(iphdr->ip_dst), sink, INET_ADDRSTRLEN);
 	//cout << "At PGW: UE IP is " << sink << endl;
 	//cout << "TCP destination port is " << ntohs(tcp_hdr->th_dport) << endl;	
@@ -151,7 +151,7 @@ void PGWu::recv_sink() {
 void PGWu::set_ue_ip() {
 	struct ip *iphdr = allocate_ip_mem(20);
 
-	memcpy(iphdr, for_sink.pkt.data, 20 * sizeof(uint8_t));
+	memmove(iphdr, for_sink.pkt.data, 20 * sizeof(uint8_t));
 	inet_ntop(AF_INET, &(iphdr->ip_dst), ue_ip, INET_ADDRSTRLEN);
 	free(iphdr);
 }

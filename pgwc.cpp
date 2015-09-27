@@ -86,7 +86,7 @@ void PGWc::create_session_request_from_sgw(Server &pgw_server, uint16_t &sgw_ute
 	set_bearer_id();
 	add_bearer_id();
 	set_tun_cdata();
-	memcpy(&sgw_uteid, pkt.data + 2*sizeof(int) + sizeof(uint16_t), sizeof(uint16_t));
+	memmove(&sgw_uteid, pkt.data + 2*sizeof(int) + sizeof(uint16_t), sizeof(uint16_t));
 }
 
 void PGWc::copy_to_pkt(Packet &arg) {
@@ -97,12 +97,12 @@ void PGWc::copy_to_pkt(Packet &arg) {
 
 void PGWc::set_ue_num() {
 
-	memcpy(&ue_num, pkt.data, sizeof(int));
+	memmove(&ue_num, pkt.data, sizeof(int));
 }
 
 void PGWc::set_bearer_id() {
 
-	memcpy(&bearer_id, pkt.data + sizeof(int), sizeof(int));
+	memmove(&bearer_id, pkt.data + sizeof(int), sizeof(int));
 	add_bearer_id();
 }
 
@@ -113,7 +113,7 @@ void PGWc::add_bearer_id() {
 
 void PGWc::set_tun_cdata() {
 
-	memcpy(&tun_cdata.sgw_cteid, pkt.data + 2*sizeof(int), sizeof(uint16_t));
+	memmove(&tun_cdata.sgw_cteid, pkt.data + 2*sizeof(int), sizeof(uint16_t));
 }
 
 void PGWc::set_cteid() {
@@ -149,7 +149,7 @@ void PGWc::delete_session_req_from_sgw(Server &pgw_server) {
 	cout << "Waiting to read delete session request from SGW" << endl;
 	pgw_server.read_data();
 	pgw_server.pkt.rem_gtpc_hdr();
-	memcpy(&type, pgw_server.pkt.data, sizeof(int));
+	memmove(&type, pgw_server.pkt.data, sizeof(int));
 	if (type == 3) {
 		cout << "Detach request for UE - " << ue_num << " has been received at PGW" << endl;
 	}

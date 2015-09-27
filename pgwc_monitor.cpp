@@ -94,8 +94,8 @@ void PGWcMonitor::write_sink() {
 
 	copy_to_sinkpkt();
 
-	memcpy(iphdr, to_sink.pkt.data, 20 * sizeof(uint8_t));
-	memcpy(tcp_hdr, to_sink.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
+	memmove(iphdr, to_sink.pkt.data, 20 * sizeof(uint8_t));
+	memmove(tcp_hdr, to_sink.pkt.data + 20 * sizeof(uint8_t), 20 * sizeof(uint8_t));	
 	inet_ntop(AF_INET, &(iphdr->ip_dst), sink, INET_ADDRSTRLEN);
 	cout << "At PGW: Sink IP is " << sink << endl;
 	cout << "TCP destination port is " << ntohs(tcp_hdr->th_dport) << endl;	

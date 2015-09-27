@@ -107,12 +107,12 @@ void SGWc::copy_data(Packet &arg) {
 
 void SGWc::set_ue_num() {
 
-	memcpy(&ue_num, pkt.data + sizeof(int), sizeof(int));
+	memmove(&ue_num, pkt.data + sizeof(int), sizeof(int));
 }
 
 void SGWc::set_bearer_id() {
 
-	memcpy(&bearer_id, pkt.data + 2*sizeof(int), sizeof(int));
+	memmove(&bearer_id, pkt.data + 2*sizeof(int), sizeof(int));
 	fill_bearer_table();
 }
 
@@ -167,21 +167,21 @@ void SGWc::create_session_res_from_pgw(uint16_t &pgw_uteid) {
 	to_pgw.read_data();
 	to_pgw.pkt.rem_gtpc_hdr();
 	set_tun_cdata();
-	memcpy(&pgw_uteid, to_pgw.pkt.data + sizeof(uint16_t), sizeof(uint16_t));
+	memmove(&pgw_uteid, to_pgw.pkt.data + sizeof(uint16_t), sizeof(uint16_t));
 	set_ue_ip();	
 }
 
 void SGWc::set_tun_cdata() {
 
-	memcpy(&tun_cdata.mme_cteid, pkt.data + 3*sizeof(int), sizeof(uint16_t));
-	memcpy(&tun_cdata.pgw_cteid, to_pgw.pkt.data, sizeof(uint16_t));
+	memmove(&tun_cdata.mme_cteid, pkt.data + 3*sizeof(int), sizeof(uint16_t));
+	memmove(&tun_cdata.pgw_cteid, to_pgw.pkt.data, sizeof(uint16_t));
 	tun_cdata.pgw_port = g_pgw_port;
 	tun_cdata.pgw_addr.assign(g_pgw_addr);
 }
 
 void SGWc::set_ue_ip() {
 
-	memcpy(ue_ip, to_pgw.pkt.data + 2*sizeof(uint16_t), INET_ADDRSTRLEN);		
+	memmove(ue_ip, to_pgw.pkt.data + 2*sizeof(uint16_t), INET_ADDRSTRLEN);		
 }
 
 void SGWc::create_session_res_to_mme(Server &sgw_server) {
@@ -202,7 +202,7 @@ void SGWc::modify_session_req_from_mme(Server &sgw_server, uint16_t &enodeb_utei
 	sgw_server.read_data();
 	sgw_server.pkt.rem_gtpc_hdr();
 	copy_data(sgw_server.pkt);
-	memcpy(&enodeb_uteid, pkt.data, sizeof(uint16_t));
+	memmove(&enodeb_uteid, pkt.data, sizeof(uint16_t));
 	cout << "Modify session request has been received at SGW for UE - " << ue_num << endl;
 }
 
@@ -236,7 +236,7 @@ void SGWc::delete_session_req_from_mme(Server &sgw_server) {
 
 	sgw_server.read_data();
 	sgw_server.pkt.rem_gtpc_hdr();
-	memcpy(&type, sgw_server.pkt.data, sizeof(int));
+	memmove(&type, sgw_server.pkt.data, sizeof(int));
 	copy_pkts(sgw_server.pkt, to_pgw.pkt);
 	if (type == 3) {
 		cout << "Detach request for UE - " << ue_num << " has been received at SGW" << endl;
@@ -274,7 +274,7 @@ void SGWc::delete_session_res_from_pgw() {
 	cout << "Read Delete session response from PGW for UE - " << ue_num << endl;
 	to_pgw.pkt.rem_gtpc_hdr();
 	cout << "Removed GTP header of Delete session response from PGW for UE - " << ue_num << endl;
-	memcpy(reply, to_pgw.pkt.data, to_pgw.pkt.data_len);
+	memmove(reply, to_pgw.pkt.data, to_pgw.pkt.data_len);
 	cout << "Response is " << reply << endl;
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "PGW has successfully deallocated resources for UE - " << ue_num << endl;

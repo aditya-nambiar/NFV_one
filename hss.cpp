@@ -118,8 +118,8 @@ void HSS::handle_db_error() {
 void HSS::recv_req_from_mme() {
 
 	hss_server.read_data();
-	memcpy(&ue_data.imsi, hss_server.pkt.data, sizeof(unsigned long long));
-	memcpy(&ue_data.msisdn, hss_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));	
+	memmove(&ue_data.imsi, hss_server.pkt.data, sizeof(unsigned long long));
+	memmove(&ue_data.msisdn, hss_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));	
 }
 
 void HSS::set_key_id() {

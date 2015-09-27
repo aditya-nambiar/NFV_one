@@ -34,7 +34,7 @@ void* process_traffic(void *arg) {
 	pgw_server.client_num = entity.num;
 	pgw_server.connect_with_client();
 	pgw_server.read_data();
-	memcpy(&type, pgw_server.pkt.data, sizeof(int));
+	memmove(&type, pgw_server.pkt.data, sizeof(int));
 	if (type == 1) {
 		handle_cdata(pgw_server);
 	}

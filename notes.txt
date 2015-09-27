@@ -45,6 +45,8 @@ top -p $(pgrep pgw | tr \\n , | sed 's/,//')
 - To run the program through valgrind:
 	- sudo valgrind --tool=memcheck --leak-check=yes ./prog_name
 
+- Searching for a text in all files of a directory:
+	- grep -rnw "directory" -e "search_text"
 
 Things to do:
 

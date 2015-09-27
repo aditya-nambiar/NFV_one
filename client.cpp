@@ -93,7 +93,7 @@ void Client::connect_with_server(int client_num) {
 	pkt.make_data_packet();
 	write_data();
 	read_data();
-	memcpy(&new_server_port, pkt.data, sizeof(int));
+	memmove(&new_server_port, pkt.data, sizeof(int));
 	fill_server_details(new_server_port, server_addr);
 	// cout << "Client side: Client-" << client_num << " connected with server with port " << new_server_port << endl;	
 }

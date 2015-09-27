@@ -26,8 +26,8 @@ Packet::Packet(const Packet &src_obj) {
 	gtpu_hdr = src_obj.gtpu_hdr;
 	ip_hdr = src_obj.ip_hdr;
 	udp_hdr = src_obj.udp_hdr;
-	memcpy(data, src_obj.data, src_obj.data_len);
-	memcpy(packet, src_obj.packet, src_obj.packet_len);
+	memmove(data, src_obj.data, src_obj.data_len);
+	memmove(packet, src_obj.packet, src_obj.packet_len);
 	data_len = src_obj.data_len;
 	packet_len = src_obj.packet_len;
 }
@@ -106,37 +106,37 @@ void Packet::fill_udp_hdr(int arg_src_port, int arg_dst_port) {
 
 void Packet::fill_data(int pos, int len, int arg) {
 	
-	memcpy(data + pos, &arg, len * sizeof(uint8_t));
+	memmove(data + pos, &arg, len * sizeof(uint8_t));
 	data_len += len;
 }
 
 void Packet::fill_data(int pos, int len, uint16_t arg) {
 	
-	memcpy(data + pos, &arg, len * sizeof(uint8_t));
+	memmove(data + pos, &arg, len * sizeof(uint8_t));
 	data_len += len;
 }
 
 void Packet::fill_data(int pos, int len, unsigned long long arg) {
 	
-	memcpy(data + pos, &arg, len * sizeof(uint8_t));
+	memmove(data + pos, &arg, len * sizeof(uint8_t));
 	data_len += len;
 }
 
 void Packet::fill_data(int pos, int len, uint8_t *message) {
 	
-	memcpy(data + pos, message, len * sizeof(uint8_t));
+	memmove(data + pos, message, len * sizeof(uint8_t));
 	data_len += len;
 }
 
 void Packet::fill_data(int pos, int len, const char *message) {
 	
-	memcpy(data + pos, message, len * sizeof(uint8_t));
+	memmove(data + pos, message, len * sizeof(uint8_t));
 	data_len += len;
 }
 
 void Packet::fill_data(int pos, int len, string message) {
 	
-	memcpy(data + pos, message.c_str(), len * sizeof(uint8_t));
+	memmove(data + pos, message.c_str(), len * sizeof(uint8_t));
 	data_len += len;
 }
 
@@ -174,28 +174,28 @@ uint16_t Packet::udp_checksum() {
   	
   	chk_sum_len = 0;
   	ptr = &buf[0];
-  	memcpy(ptr, &ip_hdr.ip_src.s_addr, sizeof (ip_hdr.ip_src.s_addr));
+  	memmove(ptr, &ip_hdr.ip_src.s_addr, sizeof (ip_hdr.ip_src.s_addr));
   	ptr += sizeof(ip_hdr.ip_src.s_addr);
   	chk_sum_len += sizeof (ip_hdr.ip_src.s_addr);
-  	memcpy(ptr, &ip_hdr.ip_dst.s_addr, sizeof (ip_hdr.ip_dst.s_addr));
+  	memmove(ptr, &ip_hdr.ip_dst.s_addr, sizeof (ip_hdr.ip_dst.s_addr));
   	ptr += sizeof(ip_hdr.ip_dst.s_addr);
   	chk_sum_len += sizeof (ip_hdr.ip_dst.s_addr);
   	*ptr = 0; 
   	ptr++;
   	chk_sum_len += 1;
-  	memcpy(ptr, &ip_hdr.ip_p, sizeof (ip_hdr.ip_p));
+  	memmove(ptr, &ip_hdr.ip_p, sizeof (ip_hdr.ip_p));
   	ptr += sizeof (ip_hdr.ip_p);
   	chk_sum_len += sizeof (ip_hdr.ip_p);
-  	memcpy(ptr, &udp_hdr.len, sizeof (udp_hdr.len));
+  	memmove(ptr, &udp_hdr.len, sizeof (udp_hdr.len));
   	ptr += sizeof (udp_hdr.len);
   	chk_sum_len += sizeof (udp_hdr.len);
-  	memcpy(ptr, &udp_hdr.source, sizeof (udp_hdr.source));
+  	memmove(ptr, &udp_hdr.source, sizeof (udp_hdr.source));
   	ptr += sizeof (udp_hdr.source);
   	chk_sum_len += sizeof (udp_hdr.source);
-  	memcpy(ptr, &udp_hdr.dest, sizeof (udp_hdr.dest));
+  	memmove(ptr, &udp_hdr.dest, sizeof (udp_hdr.dest));
   	ptr += sizeof (udp_hdr.dest);
   	chk_sum_len += sizeof (udp_hdr.dest);
-  	memcpy(ptr, &udp_hdr.len, sizeof (udp_hdr.len));
+  	memmove(ptr, &udp_hdr.len, sizeof (udp_hdr.len));
   	ptr += sizeof (udp_hdr.len);
   	chk_sum_len += sizeof (udp_hdr.len);
   	*ptr = 0; 
@@ -203,7 +203,7 @@ uint16_t Packet::udp_checksum() {
   	*ptr = 0; 
   	ptr++;
   	chk_sum_len += 2;
-  	memcpy(ptr, data, data_len);
+  	memmove(ptr, data, data_len);
   	ptr += data_len;
   	chk_sum_len += data_len;
   	for (i = 0; i < data_len%2; i++, ptr++) {
@@ -218,7 +218,7 @@ uint16_t Packet::udp_checksum() {
 void Packet::make_data_packet() {
 	
 	clear_packet();
-	memcpy(packet, data, data_len);
+	memmove(packet, data, data_len);
 	packet_len = data_len;
 }
 
@@ -227,8 +227,8 @@ void Packet::add_gtpc_hdr() {
 	uint8_t *tem;
 	
 	tem = allocate_uint8_mem(IP_MAXPACKET);
-	memcpy(tem, &gtpc_hdr, GTPC_LEN * sizeof(uint8_t));
-	memcpy((tem + GTPC_LEN), data, data_len * sizeof(uint8_t));
+	memmove(tem, &gtpc_hdr, GTPC_LEN * sizeof(uint8_t));
+	memmove((tem + GTPC_LEN), data, data_len * sizeof(uint8_t));
 	len = GTPC_LEN + data_len;
 	clear_data();
 	fill_data(0, len, tem);
@@ -240,8 +240,8 @@ void Packet::add_gtpu_hdr() {
 	uint8_t *tem;
 
 	tem = allocate_uint8_mem(IP_MAXPACKET);
-	memcpy(tem, &gtpu_hdr, GTPU_LEN * sizeof(uint8_t));
-	memcpy((tem + GTPU_LEN), data, data_len * sizeof(uint8_t));
+	memmove(tem, &gtpu_hdr, GTPU_LEN * sizeof(uint8_t));
+	memmove((tem + GTPU_LEN), data, data_len * sizeof(uint8_t));
 	len = GTPU_LEN + data_len;
 	clear_data();
 	fill_data(0, len, tem);
@@ -277,9 +277,9 @@ void Packet::rem_gtpu_hdr() {
 void Packet::encap() {
 	
 	clear_packet();
-	memcpy(packet, &ip_hdr, IP_LEN * sizeof(uint8_t));
-	memcpy((packet + IP_LEN), &udp_hdr, UDP_LEN * sizeof(uint8_t));
-	memcpy((packet + IP_LEN + UDP_LEN), data, data_len * sizeof(uint8_t));
+	memmove(packet, &ip_hdr, IP_LEN * sizeof(uint8_t));
+	memmove((packet + IP_LEN), &udp_hdr, UDP_LEN * sizeof(uint8_t));
+	memmove((packet + IP_LEN + UDP_LEN), data, data_len * sizeof(uint8_t));
 	packet_len = IP_LEN + UDP_LEN + data_len;
 }
 

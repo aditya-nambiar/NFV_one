@@ -96,7 +96,7 @@ void Server::listen_accept() {
 	while (1) {
 		status = recvfrom(server_socket, pkt.data, BUFFER_SIZE, 0, (sockaddr*)&entity.client_sock_addr, &g_addr_len);
 		report_error(status);
-		memcpy(&entity.num, pkt.data, sizeof(int)); 		
+		memmove(&entity.num, pkt.data, sizeof(int)); 		
 		status = pthread_mutex_lock(&tpool.conn_lock);
 		report_error(status, "Error in locking");
 		if (tpool.connections.size() == tpool.max_threads) {
@@ -118,7 +118,7 @@ void Server::listen_accept(void*(*multithreading_func)(void*)) {
 	i = 0;
 	while (1) {
 		status = recvfrom(server_socket, pkt.data, BUFFER_SIZE, 0, (sockaddr*)&clients[i].client_sock_addr, &g_addr_len);
-		memcpy(&clients[i].num, pkt.data, sizeof(int)); 		
+		memmove(&clients[i].num, pkt.data, sizeof(int)); 		
 		report_error(status);
 		status = pthread_create(&tid[i], NULL, multithreading_func, &clients[i]);
 		report_error(status);
