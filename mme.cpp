@@ -168,7 +168,12 @@ void MME::setup_hss_client() {
 }
 
 void MME::fetch_ue_data() {
+	unsigned long long imsi;
+	unsigned long long msisdn;
 
+	memcpy(&imsi, mme_server.pkt.data, sizeof(unsigned long long));
+	memcpy(&msisdn, mme_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));
+	cout << "IMSI is " << imsi << ". MSISDN is " << msisdn << " for UE - " << ue_num << endl;
 	to_hss.pkt.clear_data();
 	to_hss.pkt.fill_data(0, mme_server.pkt.data_len, mme_server.pkt.data);
 	to_hss.pkt.make_data_packet();
@@ -307,7 +312,7 @@ void MME::delete_session_req_to_sgw() {
 
 void MME::delete_session_res_from_sgw() {
 
-	cout << "Waiting to read Detach session response from SGW" << endl;
+	cout << "Waiting to read Detach session response from SGW for UE - " << ue_num << endl;
 	to_sgw.read_data();
 	to_sgw.pkt.rem_gtpc_hdr();
 	memcpy(reply, to_sgw.pkt.data, to_sgw.pkt.data_len);

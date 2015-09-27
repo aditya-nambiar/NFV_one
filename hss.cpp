@@ -120,6 +120,7 @@ void HSS::recv_req_from_mme() {
 	hss_server.read_data();
 	memcpy(&ue_data.imsi, hss_server.pkt.data, sizeof(unsigned long long));
 	memcpy(&ue_data.msisdn, hss_server.pkt.data + sizeof(unsigned long long), sizeof(unsigned long long));	
+	cout << "IMSI is " << ue_data.imsi << ". MSISDN is " << ue_data.msisdn << endl;
 }
 
 void HSS::set_key_id() {

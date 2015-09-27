@@ -68,6 +68,7 @@ void* generate_traffic(void *arg) {
 		attach(ue, to_mme);
 		send_traffic(ue);
 		detach(ue, to_mme);
+		usleep(100);
 		time_check(g_start_time, g_req_duration, time_exceeded);
 		if (time_exceeded) {
 			break;
