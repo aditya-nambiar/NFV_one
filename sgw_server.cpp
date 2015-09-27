@@ -6,10 +6,10 @@ void* process_traffic(void *arg) {
 	int status;
 	int type;
 
-	status = setsockopt(sgw_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
-	report_error(status);
 	sgw_server.fill_server_details(g_freeport, g_sgw1_addr);
 	sgw_server.bind_server();
+	status = setsockopt(sgw_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	sgw_server.client_sock_addr = entity.client_sock_addr;
 	sgw_server.client_num = entity.num;
 	sgw_server.connect_with_client();
