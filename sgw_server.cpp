@@ -44,12 +44,12 @@ void handle_cdata(Server &sgw_server) {
 	sgwc.fill_tun_ctable();
 	sgwu.fill_tun_utable(uteid, tun_udata);
 	cout << "Tunnel is formed from eNodeB to PGW via SGW for UE - " << sgwc.ue_num << endl;
-	// sgwc.delete_session_req_from_mme(sgw_server);
-	// sgwc.delete_session_req_to_pgw();
-	// sgwc.delete_session_res_from_pgw();
-	// sgwc.delete_session_res_to_mme(sgw_server);
-	// sgwu.erase_tun_utable(uteid);
-	// cout << "SGW has successfully deallocated resources for UE - " << sgwc.ue_num << endl;
+	sgwc.delete_session_req_from_mme(sgw_server);
+	sgwc.delete_session_req_to_pgw();
+	sgwc.delete_session_res_from_pgw();
+	sgwc.delete_session_res_to_mme(sgw_server);
+	sgwu.erase_tun_utable(uteid);
+	cout << "SGW has successfully deallocated resources for UE - " << sgwc.ue_num << endl;
 }
 
 void handle_udata(Server &sgw_server) {
@@ -104,6 +104,5 @@ int main(int argc, char *argv[]) {
 	sgw_server.fill_server_details(g_sgw1_port, g_sgw1_addr);
 	sgw_server.bind_server();
 	sgw_server.listen_accept();
-	cout << "Oops! Comes here" << endl;
 	return 0;
 }
