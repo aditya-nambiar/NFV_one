@@ -253,8 +253,8 @@ void Packet::rem_gtpc_hdr() {
 	uint8_t *tem;	
 
 	tem = allocate_uint8_mem(IP_MAXPACKET);
-	memcpy(&gtpc_hdr, data, GTPC_LEN * sizeof(uint8_t));
-	memcpy(tem, (data + GTPC_LEN), (data_len - GTPC_LEN) * sizeof(uint8_t));
+	memmove(&gtpc_hdr, data, GTPC_LEN * sizeof(uint8_t));
+	memmove(tem, (data + GTPC_LEN), (data_len - GTPC_LEN) * sizeof(uint8_t));
 	len = data_len - GTPC_LEN;
 	clear_data();
 	fill_data(0, len, tem);
@@ -266,8 +266,8 @@ void Packet::rem_gtpu_hdr() {
 	uint8_t *tem;
 
 	tem = allocate_uint8_mem(IP_MAXPACKET);
-	memcpy(&gtpu_hdr, data, GTPU_LEN * sizeof(uint8_t));
-	memcpy(tem, (data + GTPU_LEN), (data_len - GTPU_LEN) * sizeof(uint8_t));
+	memmove(&gtpu_hdr, data, GTPU_LEN * sizeof(uint8_t));
+	memmove(tem, (data + GTPU_LEN), (data_len - GTPU_LEN) * sizeof(uint8_t));
 	len = data_len - GTPU_LEN;
 	clear_data();
 	fill_data(0, len, tem);

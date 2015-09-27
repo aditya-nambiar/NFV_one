@@ -34,6 +34,7 @@ const char *g_private_sink_addr = "192.168.100.2";
 
 socklen_t g_addr_len = sizeof(sockaddr_in);
 struct timeval g_timeout = {5, 0};
+int g_fail_count = 0;
 
 ClientDetails::ClientDetails() {
 
@@ -86,6 +87,7 @@ void report_error(int arg) {
 			cout << "Killing the thread" << endl;
 		}
 		cout << "***********************" << endl;		
+		g_fail_count++;
 		pthread_exit(NULL);			
 	}
 }
@@ -102,6 +104,7 @@ void report_error(int arg, const char *message) {
 			cout << "Killing the thread" << endl;
 		}
 		cout << "***********************" << endl;		
+		g_fail_count++;
 		pthread_exit(NULL);			
 	}
 }

@@ -73,6 +73,7 @@ extern const char *g_private_sink_addr;
 extern const char *g_pgw_server_for_sink_addr;
 extern socklen_t g_addr_len;
 extern struct timeval g_timeout;
+extern int g_fail_count;
 
 struct ClientDetails {
 	int num;

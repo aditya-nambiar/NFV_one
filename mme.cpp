@@ -314,7 +314,9 @@ void MME::delete_session_res_from_sgw() {
 
 	cout << "Waiting to read Detach session response from SGW for UE - " << ue_num << endl;
 	to_sgw.read_data();
+	cout << "Read Delete session response from SGW for UE - " << ue_num << endl;	
 	to_sgw.pkt.rem_gtpc_hdr();
+	cout << "Removed GTP header of Delete session response from SGW for UE - " << ue_num << endl;	
 	memcpy(reply, to_sgw.pkt.data, to_sgw.pkt.data_len);
 	if (strcmp((const char*)reply, "OK") == 0) {
 		cout << "MME has received successful detach response for UE - " << ue_num << endl;
