@@ -81,7 +81,7 @@ sink:	$(SINK_P)
 	$(SINK_R)
 
 clean:
-	rm -f ran mme hss sgw pgw tem *~
+	rm -f ran mme hss sgw pgw sink *~
 
 #-------------------------------------------#
 
