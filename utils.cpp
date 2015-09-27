@@ -78,7 +78,7 @@ void report_error(int arg) {
 
 	if (arg < 0){
 		cout << "***********************" << endl;
-		if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+		if (errno == EAGAIN || errno == EWOULDBLOCK){
 			cout << "Receive time exceeded. Killing the thread" << endl;
 		}
 		else {
@@ -94,7 +94,7 @@ void report_error(int arg, const char *message) {
 
 	if (arg < 0){
 		cout << "***********************" << endl;
-		if (errno == EAGAIN || errno == EWOULDBLOCK || arg < 0){
+		if (errno == EAGAIN || errno == EWOULDBLOCK){
 			cout << "Receive time exceeded. Killing the thread" << endl;
 		}
 		else {
