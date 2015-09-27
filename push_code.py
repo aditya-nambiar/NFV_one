@@ -7,6 +7,7 @@ status = "git status"
 add = 'git add .'
 commit = "git commit -a -m " + "\"" +  time + "\""
 push = "git push -u origin master"
+os.system("make")
 os.system(status)
 proceed = raw_input('Proceed? (y/a/n): ')
 if (proceed == 'y'):

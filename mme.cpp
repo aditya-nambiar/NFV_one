@@ -141,10 +141,10 @@ void MME::set_pgw() {
 void MME::startup_mme_server(ClientDetails &entity) {
 	int status;
 
-	status = setsockopt(mme_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
-	report_error(status);
 	mme_server.fill_server_details(g_freeport, g_mme_addr);
 	mme_server.bind_server();
+	status = setsockopt(mme_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
+	report_error(status);
 	mme_server.client_sock_addr = entity.client_sock_addr;
 	mme_server.client_num = entity.num;
 	mme_server.connect_with_client();
