@@ -104,6 +104,5 @@ int main(int argc, char *argv[]) {
 	sgw_server.fill_server_details(g_sgw1_port, g_sgw1_addr);
 	sgw_server.bind_server();
 	sgw_server.listen_accept();
-	cout << "Oops! Comes here" << endl;
 	return 0;
 }
