@@ -129,5 +129,6 @@ int main(int argc, char *argv[]) {
 		pthread_join(tid[i],NULL);
 	}
 	cout << "Requested duration has ended. Finishing the program." << endl;
+	cout << "Number of UE requests failed is " << g_fail_count << endl;
 	return 0;
 }

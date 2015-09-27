@@ -271,7 +271,9 @@ void SGWc::delete_session_res_from_pgw() {
 
 	cout << "Waiting to read Delete session response from PGW for UE - " << ue_num << endl;
 	to_pgw.read_data();
+	cout << "Read Delete session response from PGW for UE - " << ue_num << endl;
 	to_pgw.pkt.rem_gtpc_hdr();
+	cout << "Removed GTP header of Delete session response from PGW for UE - " << ue_num << endl;
 	memcpy(reply, to_pgw.pkt.data, to_pgw.pkt.data_len);
 	cout << "Response is " << reply << endl;
 	if (strcmp((const char*)reply, "OK") == 0) {
