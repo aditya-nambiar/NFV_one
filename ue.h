@@ -3,45 +3,36 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "client.h"
+#include "udp_client.h"
+#include "ran_data.h"
 
-class UE {
-public:
-	// UE data
+struct UE {
 	int num;
-	unsigned long long key;
-	unsigned long long imsi;
-	unsigned long long msisdn;
-	char *ip_addr;
-	char *res;
-	string ip_addr_str;
-	string res_str();
-	Packet pkt;
-	char *reply;
-	
-	// Connection data
 	int type;
-
-	// Sink data
-	int sink_port;
-	char *sink_addr;
+	int subtype;
 	
-	UE(int);
-	UE(const UE&);
-	friend void swap(UE&, UE&);
-	UE& operator=(UE);
-	UE(UE&&);
-	unsigned long long generate_key(int);		
-	void authenticate(Client&);
-	unsigned long long get_autn_res(unsigned long long, unsigned long long);	
-	void setup_tunnel(Client&, uint16_t&, uint16_t&, int&, string&);
-	void send_traffic();
-	void setup_interface();	
-	void set_sink();
-	void generate_data();
-	void send_detach_req(Client&);
-	void recv_detach_res(Client&);
-	~UE();		
+	unsigned long long autn_num;
+	unsigned long long rand_num;
+	unsigned long long autn_res;
+
+	UDPClient to_mme;
+	
+	string reply;
+	int status;
+	bool success;
+
+	UE(int&);
+	unsigned long long generate_key(int&);
+	void fill_mme_details();
+	void start_mme_client();
+	void send_attach_req();
+	void recv_autn_req();
+	unsigned long long set_autn_res();
+	void send_autn_res();
+	void recv_autn_check();
+	void send_tun_data();
+	void recv_tun_data();
+	~UE();
 };
 
 #endif //UE_H

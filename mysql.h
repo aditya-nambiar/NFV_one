@@ -1,5 +1,5 @@
-#ifndef DB_MYSQL_H
-#define DB_MYSQL_H
+#ifndef MYSQL_H
+#define MYSQL_H
 
 #include "utils.h"
 
@@ -18,27 +18,23 @@ struct ConnDetails {
 	friend void swap(ConnDetails&, ConnDetails&);
 	ConnDetails& operator=(ConnDetails);
 	ConnDetails(ConnDetails&&);
-	void set_details();
+	void setup_details();
 	~ConnDetails();
 };
 
-class MySql {
-public:
-	static struct ConnDetails conn_details;
+extern struct ConnDetails g_conn_details;
+
+struct MySql {
 	MYSQL *conn;
 	MYSQL_RES *result;
-	
+
 	MySql();
-	MySql(const MySql&);
-	friend void swap(MySql&, MySql&);
-	MySql& operator=(MySql);
-	MySql(MySql&&);
-	static void set_conn_details();
 	void setup_conn();
 	void perform_query(const char*);
-	void fetch_result();
-	void report_error(MYSQL*);
+	void report_db_error(MYSQL*);
 	~MySql();
 };
 
-#endif //DB_MYSQL_H
+void setup_conn_details();
+
+#endif //MYSQL_H

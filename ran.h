@@ -3,7 +3,8 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "client.h"
+#include "udp_client.h"
+#include "ran_data.h"
 #include "ue.h"
 #include "enodeb.h"
 
@@ -15,9 +16,11 @@ extern time_t g_start_time;
 void setup_tun();
 void* monitor_traffic(void*);
 void* generate_traffic(void*);
-void attach(UE&, Client&);
-void send_traffic(UE&);
-void detach(UE&, Client&);
+void authenticate(UE&);
+void setup_tunnel(UE&);
+void set_tun_data(UE&);
+void send_traffic();
+void detach(UE&);
 void startup_ran(char**, vector<int>&, vector<pthread_t>&);
 
 #endif //RAN_H

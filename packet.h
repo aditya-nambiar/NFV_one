@@ -3,11 +3,10 @@
 
 #include "utils.h"
 
-#define IP_MAXPACKET 65535
 #define GTPC_LEN 4
 #define GTPU_LEN 4
 #define IP_LEN 20
-#define UDP_LEN 8
+#define TCP_LEN 20
 
 struct GTPc {
 	uint16_t cteid;
@@ -18,22 +17,12 @@ struct GTPu {
 };
 
 struct Packet {
-	static const int ip_flags[4];
-
-	char *src_ip;
-	char *dst_ip;
-	int src_port;
-	int dst_port;
-	
 	struct GTPc gtpc_hdr;
 	struct GTPu gtpu_hdr;
-	struct ip ip_hdr;
-	struct udphdr udp_hdr;
 
 	uint8_t *data;
-	uint8_t *packet;
 	int data_len;
-	int packet_len;
+	int curr_pos;
 	
 	Packet();
 	Packet(const Packet&);
@@ -41,33 +30,35 @@ struct Packet {
 	Packet& operator=(Packet);
 	Packet(Packet&&);
 
-	void fill_gtpc_hdr(uint16_t);
-	void fill_gtpu_hdr(uint16_t);
-	void fill_ip_hdr(const char*, const char*);
-	void fill_udp_hdr(int, int);
-	void fill_data(int, int, int);
-	void fill_data(int, int, uint16_t);
-	void fill_data(int, int, unsigned long long);
-	void fill_data(int, int, uint8_t*);	
-	void fill_data(int, int, const char*);	
-	void fill_data(int, int, string);
-	void eval_udp_checksum();
-	uint16_t ip_checksum(uint16_t*, int);
-	uint16_t udp_checksum();	
+	void add_gtpc_hdr(uint16_t);
+	void add_gtpu_hdr(uint16_t);
 
-	void make_data_packet();
-	void add_gtpc_hdr();
-	void add_gtpu_hdr();
-	void rem_gtpc_hdr();
-	void rem_gtpu_hdr();
-	void encap();
-	void decap();
+	void add_data(int);
+	void add_data(uint16_t);
+	void add_data(unsigned long long);
+	void add_data(uint8_t*, int);	
+	void add_data(const char*);	
+	void add_data(string);
+
+	void copy_gtpc_hdr();
+	void copy_gtpu_hdr();
+
+	void copy_data(int&);
+	void copy_data(uint16_t&);
+	void copy_data(unsigned long long&);
+	void copy_data(uint8_t*, int&);	
+	void copy_data(char*, int&);	
+	void copy_data(string&, int&);
+
+	void add_metadata(int, int, int);	
+	void copy_metadata(int&, int&, int&);
+	
 	void clear_data();
-	void clear_packet();
+
 	void copy_pkts(Packet&, Packet&);
 	void copy_frompkt(Packet&);
 	void copy_topkt(Packet&);
-	
+
 	~Packet();
 };
 

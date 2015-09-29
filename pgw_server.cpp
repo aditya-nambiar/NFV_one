@@ -1,116 +1,149 @@
 #include "pgw_server.h"
 
-void setup_tun() {
+// void setup_tun() {
 
-	system("sudo openvpn --rmtun --dev tun1");
-	system("sudo openvpn --mktun --dev tun1");
-	system("sudo ip link set tun1 up");
-	system("sudo ip addr add 192.168.100.1/24 dev tun1");
-}
+// 	system("sudo openvpn --rmtun --dev tun1");
+// 	system("sudo openvpn --mktun --dev tun1");
+// 	system("sudo ip link set tun1 up");
+// 	system("sudo ip addr add 192.168.100.1/24 dev tun1");
+// }
 
-void* monitor_traffic(void *arg) {
-	PGWcMonitor pgwc_monitor;
+// void* monitor_traffic(void *arg) {
+// 	PGWcMonitor pgwc_monitor;
 
-	pgwc_monitor.attach_to_tun();
-	pgwc_monitor.attach_to_sink();
-	cout << "PGW Monitoring started " << endl;
-	while (1) {
-		pgwc_monitor.read_tun();
-		pgwc_monitor.write_sink();		
-	}
-}
+// 	pgwc_monitor.attach_to_tun();
+// 	pgwc_monitor.attach_to_sink();
+// 	cout << "PGW Monitoring started " << endl;
+// 	while (1) {
+// 		pgwc_monitor.read_tun();
+// 		pgwc_monitor.write_sink();		
+// 	}
+// }
 
 void* process_traffic(void *arg) {
-	ClientDetails entity = *(ClientDetails*)arg;
-	Server pgw_server;
-	int status;
-	int type;
+	PGW pgw;
 
-	pgw_server.fill_server_details(g_freeport, g_pgw_addr);
-	pgw_server.bind_server();
-	status = setsockopt(pgw_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
-	report_error(status);
-	pgw_server.client_sock_addr = entity.client_sock_addr;
-	pgw_server.client_num = entity.num;
-	pgw_server.connect_with_client();
-	pgw_server.read_data();
-	memmove(&type, pgw_server.pkt.data, sizeof(int));
-	if (type == 1) {
-		handle_cdata(pgw_server);
+	while(1){
+		pgw.read_data();
+		if(pgw.status == 0)
+			continue;
+		pgw.set_metadata();
+
+		if(pgw.type == 1){	
+			attach_process(pgw);
+		}
+		else if(pgw.type == 2){
+			data_transfer(pgw);
+		}
+		else if(pgw.type == 3){
+			detach_process(pgw);
+		}
+		else{
+			cout << "Incorrect type - " << pgw.type << endl;
+		}
 	}
-	else if (type == 2) {
-		handle_udata(pgw_server);
-	}
-	else {
-		cout << "Invalid type number has been received at PGW server" << endl;
-		handle_exceptions();
-	}	
+	return NULL;
 }
 
-void handle_cdata(Server &pgw_server) {
-	PGWc pgwc;
-	PGWu pgwu;
-	uint16_t uteid;
-	TunUdata tun_udata;
-
-	pgwc.create_session_request_from_sgw(pgw_server, tun_udata.sgw_uteid);
-	uteid = pgwu.generate_uteid(pgwc.ue_num);
-	pgwc.create_session_response_to_sgw(pgw_server, uteid);
-	pgwc.fill_tun_ctable();
-	pgwu.fill_tun_utable(g_ip_table[pgwc.ue_num], tun_udata);
-	cout << "Tunnel created from PGW to SGW for UE - " << pgwc.ue_num << endl;
-	pgwc.delete_session_req_from_sgw(pgw_server);
-	pgwc.delete_session_res_to_sgw(pgw_server);
-	pgwu.erase_tun_utable(g_ip_table[pgwc.ue_num]);
-	cout << "PGW has successfully deallocated resources for UE - " << pgwc.ue_num << endl;
-}
-
-void handle_udata(Server &pgw_server) {
-	PGWu pgwu;
-	fd_set read_set;
-	int max_fd;
-	int size;
-	int i;
-	int status;
-	bool data_invalid;
+void attach_process(PGW &pgw){
 	
-	pgwu.configure_raw_client();
-	pgwu.configure_server_for_sink();
-	while (1) {
-		FD_ZERO(&read_set);
-		FD_SET(pgw_server.server_socket, &read_set); 
-		FD_SET(pgwu.for_sink.server_socket, &read_set); 
-		max_fd = max(pgw_server.server_socket, pgwu.for_sink.server_socket);
-		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-		report_error(status, "Select-process failure\tTry again");		
-		if (FD_ISSET(pgw_server.server_socket, &read_set)) {
-			pgwu.recv_sgw(pgw_server);
-			pgwu.send_raw_socket();		
-		}
-		if (FD_ISSET(pgwu.for_sink.server_socket, &read_set)) {
-			pgwu.recv_sink();
-			pgwu.set_ue_ip();
-			pgwu.set_tun_udata(data_invalid);
-			if (data_invalid)
-				continue;
-			pgwu.send_sgw(pgw_server);	
-		}
+	if(pgw.subtype == 3){
+		create_session(pgw);
 	}
+	else{
+		cout << "Incorrect subtype for type 1 -> " << pgw.subtype << endl;
+	}
+}
+
+void create_session(PGW &pgw){
+
+	pgw.store_create_session_data();
+	pgw.create_session_res_to_sgw();
+}
+
+void data_transfer(PGW &pgw){
+
+
+}
+
+void detach_process(PGW &pgw){
+
+	if(pgw.subtype == 1){
+		delete_session(pgw);
+	}
+	else{
+		cout << "Incorrect subtype for type 3 -> " << pgw.subtype << endl;	
+	}
+}
+
+void delete_session(PGW &pgw){
+
+	pgw.delete_session_res_to_sgw();
+	pgw.delete_session_data();
+}
+
+// void handle_udata(Server &pgw_server) {
+// 	PGWu pgwu;
+// 	fd_set read_set;
+// 	int max_fd;
+// 	int size;
+// 	int i;
+// 	int status;
+// 	bool data_invalid;
+	
+// 	pgwu.configure_raw_client();
+// 	pgwu.configure_server_for_sink();
+// 	while (1) {
+// 		FD_ZERO(&read_set);
+// 		FD_SET(pgw_server.server_socket, &read_set); 
+// 		FD_SET(pgwu.for_sink.server_socket, &read_set); 
+// 		max_fd = max(pgw_server.server_socket, pgwu.for_sink.server_socket);
+// 		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+// 		report_error(status, "Select-process failure\tTry again");		
+// 		if (FD_ISSET(pgw_server.server_socket, &read_set)) {
+// 			pgwu.recv_sgw(pgw_server);
+// 			pgwu.send_raw_socket();		
+// 		}
+// 		if (FD_ISSET(pgwu.for_sink.server_socket, &read_set)) {
+// 			pgwu.recv_sink();
+// 			pgwu.set_ue_ip();
+// 			pgwu.set_tun_udata(data_invalid);
+// 			if (data_invalid)
+// 				continue;
+// 			pgwu.send_sgw(pgw_server);	
+// 		}
+// 	}
+// }
+
+void startup_pgw(char *argv[]){
+
+	g_tcount = atoi(argv[1]);
+	g_tid.resize(g_tcount);
+	g_pgw_server.bind_server(g_pgw_port, g_pgw_addr.c_str());
+	g_pgw_server.print_status("PGW");		
 }
 
 int main(int argc, char *argv[]) {
-	Server pgw_server;
-	pthread_t mon_tid;
 	int status;
+	int i;
 
 	check_server_usage(argc, argv);
-	setup_tun();
-	setup_ip_table();
-	status = pthread_create(&mon_tid, NULL, monitor_traffic, NULL);
-	report_error(status);	
-	pgw_server.begin_thread_pool(2 * atoi(argv[1]), process_traffic);
-	pgw_server.fill_server_details(g_pgw_port, g_pgw_addr);
-	pgw_server.bind_server();
-	pgw_server.listen_accept();
+	startup_pgw(argv);
+	setup_pgw_data();
+	generate_ip_table();
+
+	for (i = 0; i < g_tcount; i++) {
+		status = pthread_create(&g_tid[i], NULL, process_traffic, NULL);
+		report_error(status);
+	}
+	for (i = 0; i < g_tcount; i++) {
+		pthread_join(g_tid[i], NULL);
+	}		
+
+	free_pgw_data();
 	return 0;
+
+	// setup_tun();
+	// status = pthread_create(&mon_tid, NULL, monitor_traffic, NULL);
+	// report_error(status);	
 }

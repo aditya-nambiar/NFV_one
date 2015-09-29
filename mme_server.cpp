@@ -1,67 +1,107 @@
 #include "mme_server.h"
 
-void* process_req(void *arg) {
-	ClientDetails entity;
+void* process_reqs(void *arg) {
 	MME mme;
 
-	entity = *((ClientDetails*)arg);
-	mme.startup_mme_server(entity);
-	mme.set_ue_num();
-	attach_ue(mme);
-	detach_ue(mme);
+	while(1){
+		mme.read_data();
+		if(mme.status == 0)
+			continue;
+		mme.set_metadata();
+		
+		if(mme.type == 1){
+			attach_process(mme);
+		}
+		else if(mme.type == 3){
+			detach_process(mme);
+		}
+		else{
+			cout << "Incorrect type - " << mme.type << endl;
+		}
+	}
+	return NULL;
 }
 
-void attach_ue(MME &mme) {
-
-	recv_req_from_ue(mme);
-	authenticate_ue(mme);
-	setup_tunnel(mme);
+void attach_process(MME &mme){
+	
+	if(mme.subtype == 1){
+		init_autn(mme);
+	}
+	else if(mme.subtype == 2){
+		create_session(mme);
+	}	
+	else if(mme.subtype == 3){
+		modify_session(mme);
+	}
+	else{
+		cout << "Incorrect subtype for type - 1" << mme.subtype << endl;
+	}
 }
 
-void recv_req_from_ue(MME &mme) {
+void init_autn(MME &mme){
 
-	mme.attach_req_from_ue();	
-}
-
-void authenticate_ue(MME &mme) {
-
-	mme.setup_hss_client();
 	mme.fetch_ue_data();
-	mme.authenticate_ue();
+	mme.store_ue_data();
+	mme.send_autn_req();
 }
 
-void setup_tunnel(MME &mme) {
+void create_session(MME &mme){
 
-	mme.set_cteid();
-	mme.set_sgw();
-	mme.set_pgw();
-	mme.set_bearer_id();
-	mme.setup_sgw_client();
+	mme.process_autn();
+	if(!mme.success)
+		return;
 	mme.create_session_req_to_sgw();
 	mme.create_session_res_from_sgw();
-	mme.recv_enodeb();
-	mme.modify_session_req_to_sgw();
-	mme.modify_session_res_from_sgw();
-	mme.send_enodeb();
 }
 
-void detach_ue(MME &mme) {
+void modify_session(MME &mme){
 
-	mme.detach_req_from_ue();
+	mme.store_enodeb_data();
+	mme.modify_session_req_to_sgw();
+	mme.modify_session_res_from_sgw();
+	mme.send_attach_res();
+}
+
+void detach_process(MME &mme){
+	
+	if(mme.subtype == 1){
+		delete_session(mme);
+	}
+	else{
+		cout << "Incorrect type - " << mme.type << endl;
+	}
+}
+
+void delete_session(MME &mme){
+
 	mme.delete_session_req_to_sgw();
-	mme.rem_bearer_id();
 	mme.delete_session_res_from_sgw();
-	mme.rem_tun_data();
-	mme.detach_res_to_ue();
+	mme.send_detach_res();
+	mme.delete_session_data();
+}
+
+void startup_mme(char *argv[]){
+
+	g_tcount = atoi(argv[1]);
+	g_tid.resize(g_tcount);
+	g_mme_server.bind_server(g_mme_port, g_mme_addr.c_str());
+	g_mme_server.print_status("MME");
 }
 
 int main(int argc, char *argv[]) {
-	Server mme_server;
+	int status;
+	int i;
 
 	check_server_usage(argc, argv);
-	mme_server.begin_thread_pool(atoi(argv[1]), process_req);
-	mme_server.fill_server_details(g_mme_port, g_mme_addr);
-	mme_server.bind_server();
-	mme_server.listen_accept();
+	startup_mme(argv);
+	setup_mme_data();
+	for (i = 0; i < g_tcount; i++) {
+		status = pthread_create(&g_tid[i], NULL, process_reqs, NULL);
+		report_error(status);
+	}
+	for (i = 0; i < g_tcount; i++) {
+		pthread_join(g_tid[i], NULL);
+	}		
+	free_mme_data();
 	return 0;
 }

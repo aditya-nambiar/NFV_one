@@ -3,11 +3,11 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "thread_pool.h"
-#include "server.h"
-#include "db_mysql.h"
+#include "udp_server.h"
+#include "mysql.h"
 #include "hss.h"
 
-void* process_req(void*);
+void* process_reqs(void*);
+void startup_hss(char**);
 
 #endif //HSS_SERVER_H

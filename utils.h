@@ -49,7 +49,8 @@
 
 using namespace std;
 
-#define BUFFER_SIZE 2048
+#define MAX_CONNS 100000
+#define BUF_SIZE 1024
 
 extern int g_reuse;
 extern int g_freeport;
@@ -62,32 +63,19 @@ extern int g_pgw_port;
 extern int g_public_sink_port;
 extern int g_private_sink_port;
 extern int g_pgw_server_for_sink_port;
-extern const char *g_mme_addr;
-extern const char *g_hss_addr;
-extern const char *g_sgw1_addr;
-extern const char *g_sgw2_addr;
-extern const char *g_sgw3_addr;
-extern const char *g_pgw_addr;
-extern const char *g_public_sink_addr;
-extern const char *g_private_sink_addr;
-extern const char *g_pgw_server_for_sink_addr;
+extern string g_mme_addr;
+extern string g_hss_addr;
+extern string g_sgw1_addr;
+extern string g_sgw2_addr;
+extern string g_sgw3_addr;
+extern string g_pgw_addr;
+extern string g_public_sink_addr;
+extern string g_private_sink_addr;
+extern string g_pgw_server_for_sink_addr;
 extern socklen_t g_addr_len;
 extern struct timeval g_timeout;
 extern int g_fail_count;
 
-struct ClientDetails {
-	int num;
-	struct sockaddr_in client_sock_addr;
-
-	ClientDetails();
-	ClientDetails(const ClientDetails&);
-	friend void swap(ClientDetails&, ClientDetails&);
-	ClientDetails& operator=(ClientDetails);
-	ClientDetails(ClientDetails&&);
-	~ClientDetails();
-};
-
-void check_conn(int&);
 void report_error(int);
 void report_error(int, const char*);
 void print(string);
@@ -105,5 +93,6 @@ void check_server_usage(int, char*[]);
 void check_client_usage(int, char*[]);
 void time_check(time_t&, double&, bool&);
 void handle_exceptions();
+int create_udp_socket();
 
 #endif //UTILS_H

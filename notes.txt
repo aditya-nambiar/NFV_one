@@ -48,6 +48,9 @@ top -p $(pgrep pgw | tr \\n , | sed 's/,//')
 - Searching for a text in all files of a directory:
 	- grep -rnw "directory" -e "search_text"
 
+- Listing open files
+	- lsof -c prog_name
+
 Things to do:
 
 - Encryption

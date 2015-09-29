@@ -12,82 +12,35 @@ int g_public_sink_port = 5000;
 int g_private_sink_port = 5000;
 int g_pgw_server_for_sink_port = 6000;
 
-// const char *g_mme_addr = "10.129.26.169";
-// const char *g_hss_addr = "10.129.26.169";
-// const char *g_sgw1_addr = "10.129.26.169";
-// const char *g_sgw2_addr = "10.129.26.169";
-// const char *g_sgw3_addr = "10.129.26.169";
-// const char *g_pgw_addr = "10.14.13.29";
-// const char *g_pgw_server_for_sink_addr = "10.14.13.29";
-// const char *g_public_sink_addr = "10.129.45.90";
-// const char *g_private_sink_addr = "192.168.100.2";
+// string g_mme_addr = "192.168.1.70";
+// string g_hss_addr = "192.168.1.70";
+// string g_sgw1_addr = "192.168.1.70";
+// string g_sgw2_addr = "192.168.1.70";
+// string g_sgw3_addr = "192.168.1.70";
+// string g_pgw_addr = "192.168.1.76";
+// string g_pgw_server_for_sink_addr = "192.168.1.76";
+// string g_public_sink_addr = "192.168.1.78";
+// string g_private_sink_addr = "192.168.100.2";
 
-const char *g_mme_addr = "192.168.1.70";
-const char *g_hss_addr = "192.168.1.70";
-const char *g_sgw1_addr = "192.168.1.70";
-const char *g_sgw2_addr = "192.168.1.70";
-const char *g_sgw3_addr = "192.168.1.70";
-const char *g_pgw_addr = "192.168.1.76";
-const char *g_pgw_server_for_sink_addr = "192.168.1.76";
-const char *g_public_sink_addr = "192.168.1.78";
-const char *g_private_sink_addr = "192.168.100.2";
+string g_mme_addr = "10.14.13.29";
+string g_hss_addr = "10.14.13.29";
+string g_sgw1_addr = "192.168.1.70";
+string g_sgw2_addr = "192.168.1.70";
+string g_sgw3_addr = "192.168.1.70";
+string g_pgw_addr = "192.168.1.76";
+string g_pgw_server_for_sink_addr = "192.168.1.76";
+string g_public_sink_addr = "192.168.1.78";
+string g_private_sink_addr = "192.168.100.2";
 
 socklen_t g_addr_len = sizeof(sockaddr_in);
 struct timeval g_timeout = {5, 0};
 int g_fail_count = 0;
 
-ClientDetails::ClientDetails() {
-
-
-}
-
-ClientDetails::ClientDetails(const ClientDetails &src_obj) {
-
-	num = src_obj.num;
-	client_sock_addr = src_obj.client_sock_addr;
-}
-
-void swap(ClientDetails &src_obj, ClientDetails &dst_obj) {
-	using std::swap;
-
-	swap(src_obj.num, dst_obj.num);
-	swap(src_obj.client_sock_addr, dst_obj.client_sock_addr);
-}
-
-ClientDetails& ClientDetails::operator=(ClientDetails src_obj) {
-
-	swap(*this, src_obj);
-	return *this;
-}
-
-ClientDetails::ClientDetails(ClientDetails &&src_obj)
-	:ClientDetails() {
-
-	swap(*this, src_obj);
-}
-
-ClientDetails::~ClientDetails() {
-
-
-}
-
-void check_conn(int &status) {
-
-}
-
 void report_error(int arg) {
 
 	if (arg < 0){
-		cout << "***********************" << endl;
-		if (errno == EAGAIN || errno == EWOULDBLOCK){
-			cout << "Receive time exceeded. Killing the thread" << endl;
-		}
-		else {
-			perror("ERROR");
-			cout << "Killing the thread" << endl;
-		}
-		cout << "***********************" << endl;		
-		g_fail_count++;
+		perror("ERROR");
+		cout << "Killing the thread." << endl;
 		pthread_exit(NULL);			
 	}
 }
@@ -95,17 +48,10 @@ void report_error(int arg) {
 void report_error(int arg, const char *message) {
 
 	if (arg < 0){
-		cout << "***********************" << endl;
-		if (errno == EAGAIN || errno == EWOULDBLOCK){
-			cout << "Receive time exceeded. Killing the thread" << endl;
-		}
-		else {
-			perror(message);
-			cout << "Killing the thread" << endl;
-		}
-		cout << "***********************" << endl;		
-		g_fail_count++;
-		pthread_exit(NULL);			
+		perror(message);
+		cout << "Killing the thread." << endl;
+		while(1);
+		pthread_exit(NULL);	
 	}
 }
 
@@ -237,7 +183,6 @@ void check_server_usage(int argc, char *argv[]) {
 		cout << "Please try again with a valid number of threads to be spawn" << endl;
 		exit(-1);
 	}
-	print_message("Server started");
 }
 
 void check_client_usage(int argc, char *argv[]) {
@@ -254,7 +199,6 @@ void check_client_usage(int argc, char *argv[]) {
 		cout << "Argument-2: Duration of simulation" << endl;
 		exit(-1);
 	}
-	print_message("Client started");
 }
 
 void time_check(time_t &start_time, double &duration_time, bool &time_exceeded) {
@@ -269,4 +213,12 @@ void handle_exceptions() {
 
 	cout << "Exception: Possible because of garbage data" << endl;
 	pthread_exit(NULL);
+}
+
+int create_udp_socket(){
+	int sockfd;
+
+	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	report_error(sockfd, "Error in creating sockets");
+	return sockfd;	
 }

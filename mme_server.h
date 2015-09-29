@@ -3,16 +3,21 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "thread_pool.h"
-#include "server.h"
-#include "client.h"
+#include "udp_server.h"
+#include "udp_client.h"
+#include "mme_data.h"
 #include "mme.h"
 
-void* process_req(void*);
-void attach_ue(MME&);
-void recv_req_from_ue(MME&);
-void authenticate_ue(MME&);
-void setup_tunnel(MME&);
-void detach_ue(MME&);
+void* process_reqs(void*);
+
+void attach_process(MME&);
+void init_autn(MME&);
+void create_session(MME&);
+void modify_session(MME&);
+
+void detach_process(MME&);
+void delete_session(MME&);
+
+void startup_mme(char**);
 
 #endif //MME_SERVER_H

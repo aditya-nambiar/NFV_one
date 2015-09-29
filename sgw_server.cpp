@@ -1,109 +1,148 @@
 #include "sgw_server.h"
 
 void* process_traffic(void *arg) {
-	ClientDetails entity = *(ClientDetails*)arg;
-	Server sgw_server;
-	int status;
-	int type;
+	SGW sgw;
 
-	sgw_server.fill_server_details(g_freeport, g_sgw1_addr);
-	sgw_server.bind_server();
-	status = setsockopt(sgw_server.server_socket, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&g_timeout, sizeof(struct timeval));
-	report_error(status);
-	sgw_server.client_sock_addr = entity.client_sock_addr;
-	sgw_server.client_num = entity.num;
-	sgw_server.connect_with_client();
-	sgw_server.read_data();
-	memmove(&type, sgw_server.pkt.data, sizeof(int));
-	if (type == 1) {
-		handle_cdata(sgw_server);
+	while(1){
+		sgw.read_data();
+		if(sgw.status == 0)
+			continue;
+		sgw.set_metadata();
+		
+		if(sgw.type == 1){	
+			attach_process(sgw);
+		}
+		else if(sgw.type == 2){
+			data_transfer(sgw);
+		}
+		else if(sgw.type == 3){
+			detach_process(sgw);
+		}
+		else{
+			cout << "Incorrect type - " << sgw.type << endl;
+		}
 	}
-	else if (type == 2) {
-		handle_udata(sgw_server);
+	return NULL;
+}
+
+void attach_process(SGW &sgw){
+
+	if(sgw.subtype == 3){
+		create_session(sgw);
 	}
-	else {
-		cout << "Invalid type number has been received at SGW server" << endl;
-		handle_exceptions();
+	else if(sgw.subtype == 4){
+		modify_session(sgw);
+	}
+	else{
+		cout << "Incorrect subtype for type - 1 -> " << sgw.subtype << endl;
 	}
 }
 
-void handle_cdata(Server &sgw_server) {
-	SGWc sgwc;
-	SGWu sgwu;
-	TunUdata tun_udata;
-	uint16_t uteid;
+void create_session(SGW &sgw){
 
-	sgwc.create_session_req_from_mme(sgw_server);
-	uteid = sgwu.generate_uteid(sgwc.ue_num);
-	sgwc.create_session_req_to_pgw(uteid);
-	sgwc.create_session_res_from_pgw(tun_udata.pgw_uteid);
-	sgwc.create_session_res_to_mme(sgw_server);
-	sgwc.modify_session_req_from_mme(sgw_server, tun_udata.enodeb_uteid);
-	sgwc.modify_session_res_to_mme(sgw_server, uteid);
-	sgwc.fill_pgw_addr(tun_udata.pgw_port, tun_udata.pgw_addr);
-	sgwc.fill_tun_ctable();
-	sgwu.fill_tun_utable(uteid, tun_udata);
-	cout << "Tunnel is formed from eNodeB to PGW via SGW for UE - " << sgwc.ue_num << endl;
-	sgwc.delete_session_req_from_mme(sgw_server);
-	sgwc.delete_session_req_to_pgw();
-	sgwc.delete_session_res_from_pgw();
-	sgwc.delete_session_res_to_mme(sgw_server);
-	sgwu.erase_tun_utable(uteid);
-	cout << "SGW has successfully deallocated resources for UE - " << sgwc.ue_num << endl;
+	sgw.store_create_session_data();
+	sgw.create_session_req_to_pgw();
+	sgw.create_session_res_from_pgw();
+	sgw.create_session_res_to_mme();
 }
 
-void handle_udata(Server &sgw_server) {
-	SGWu sgwu;
-	fd_set read_set;
-	int max_fd;
-	int size;
-	int i;
-	int status;
-	bool data_invalid;
+void modify_session(SGW &sgw){
 
-	while (1) {
-		FD_ZERO(&read_set);
-		FD_SET(sgw_server.server_socket, &read_set); 
-		max_fd = sgw_server.server_socket;
-		size = sgwu.pos;
-		for (i = 0; i < size; i++) {
-			FD_SET(sgwu.to_pgw[i].client_socket, &read_set); 
-			max_fd = max(max_fd, sgwu.to_pgw[i].client_socket);
-		}
-		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-		report_error(status, "Select-process failure\tTry again");		
-		if (FD_ISSET(sgw_server.server_socket, &read_set)) {
-			sgwu.recv_enodeb(sgw_server);
-			sgwu.set_uteid();
-			sgwu.set_tun_udata(data_invalid);
-			if (data_invalid)
-				continue;
-			sgwu.set_pgw_num();
-			sgwu.make_data_pgw();
-			sgwu.send_pgw();
-		}
-		for (i = 0; i < size; i++) {
-			if (FD_ISSET(sgwu.to_pgw[i].client_socket, &read_set)) {
-				sgwu.recv_pgw(i);
-				sgwu.set_uteid();
-				sgwu.set_tun_udata(data_invalid);
-				if (data_invalid)
-					continue;				
-				sgwu.make_data_enodeb();
-				sgwu.send_enodeb(sgw_server);
-			}
-		}
+	sgw.store_modify_session_data();
+	sgw.modify_session_res_to_mme();
+}
+
+void data_transfer(SGW &sgw){
+
+
+}
+
+void detach_process(SGW &sgw){
+
+	if(sgw.subtype == 1){
+		delete_session(sgw);
 	}
+	else{
+		cout << "Incorrect subtype for type - 3 -> " << sgw.subtype << endl;
+	}
+}
+
+void delete_session(SGW &sgw){
+
+	sgw.delete_session_req_to_pgw();
+	sgw.delete_session_res_from_pgw();
+	sgw.delete_session_res_to_mme();
+	sgw.delete_session_data();
+}
+
+// void handle_udata(Server &sgw_server) {
+// 	SGWu sgwu;
+// 	fd_set read_set;
+// 	int max_fd;
+// 	int size;
+// 	int i;
+// 	int status;
+// 	bool data_invalid;
+
+// 	while (1) {
+// 		FD_ZERO(&read_set);
+// 		FD_SET(sgw_server.server_socket, &read_set); 
+// 		max_fd = sgw_server.server_socket;
+// 		size = sgwu.pos;
+// 		for (i = 0; i < size; i++) {
+// 			FD_SET(sgwu.to_pgw[i].client_socket, &read_set); 
+// 			max_fd = max(max_fd, sgwu.to_pgw[i].client_socket);
+// 		}
+// 		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+// 		report_error(status, "Select-process failure\tTry again");		
+// 		if (FD_ISSET(sgw_server.server_socket, &read_set)) {
+// 			sgwu.recv_enodeb(sgw_server);
+// 			sgwu.set_uteid();
+// 			sgwu.set_tun_udata(data_invalid);
+// 			if (data_invalid)
+// 				continue;
+// 			sgwu.set_pgw_num();
+// 			sgwu.make_data_pgw();
+// 			sgwu.send_pgw();
+// 		}
+// 		for (i = 0; i < size; i++) {
+// 			if (FD_ISSET(sgwu.to_pgw[i].client_socket, &read_set)) {
+// 				sgwu.recv_pgw(i);
+// 				sgwu.set_uteid();
+// 				sgwu.set_tun_udata(data_invalid);
+// 				if (data_invalid)
+// 					continue;				
+// 				sgwu.make_data_enodeb();
+// 				sgwu.send_enodeb(sgw_server);
+// 			}
+// 		}
+// 	}
+// }
+
+void startup_sgw(char *argv[]){
+
+	g_tcount = atoi(argv[1]);
+	g_tid.resize(g_tcount);
+	g_sgw_server.bind_server(g_sgw1_port, g_sgw1_addr.c_str());
+	g_sgw_server.print_status("SGW");	
 }
 
 int main(int argc, char *argv[]) {
-	Server sgw_server;
-	
+	int status;
+	int i;
+		
 	check_server_usage(argc, argv);
-	sgw_server.begin_thread_pool(2 * atoi(argv[1]), process_traffic);
-	sgw_server.fill_server_details(g_sgw1_port, g_sgw1_addr);
-	sgw_server.bind_server();
-	sgw_server.listen_accept();
-	cout << "Oops! Comes here" << endl;
+	startup_sgw(argv);
+	setup_sgw_data();	
+
+	for (i = 0; i < g_tcount; i++) {
+		status = pthread_create(&g_tid[i], NULL, process_traffic, NULL);
+		report_error(status);
+	}
+	for (i = 0; i < g_tcount; i++) {
+		pthread_join(g_tid[i], NULL);
+	}		
+
+	free_sgw_data();
 	return 0;
 }

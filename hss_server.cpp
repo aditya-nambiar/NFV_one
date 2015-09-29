@@ -1,30 +1,58 @@
 #include "hss_server.h"
 
-void* process_req(void *arg) {
-	ClientDetails entity;
+void* process_reqs(void *arg) {
 	HSS hss;
+	hss.db_client.setup_conn();
 
-	entity = *(ClientDetails*)arg;
-	hss.startup_hss_server(entity);
-	hss.setup_db_client();
-	hss.recv_req_from_mme();
-	hss.set_key_id();
-	hss.set_autn_tokens();
-	hss.set_autn_xres();
-	hss.send_res_to_mme();
+	while(1){
+		hss.read_data();
+		if(hss.status == 0)
+			continue;
+		hss.set_metadata();
+		cout<<"Type is "<<hss.type<<". Subtype is "<<hss.subtype<<endl;
+		
+		if(hss.type == 1){
+			switch(hss.subtype){
+				case 1: 
+					hss.process_req();
+					break;
+				default:
+					cout << "Incorrect subtype for type - 1  -> " << hss.subtype << " . UE num is " << hss.ue_num << endl;
+					cout << hss.pkt.data_len << endl;
+			}
+		}
+		else{
+			cout << "Incorrect type - " << hss.type << endl;
+		}
+	}
 	mysql_thread_end();
+	return NULL;
+}
+
+void startup_hss(char *argv[]){
+
+	g_tcount = atoi(argv[1]);
+	g_tid.resize(g_tcount);
+	g_hss_server.bind_server(g_hss_port, g_hss_addr.c_str());
+	g_hss_server.print_status("HSS");
 }
 
 int main(int argc, char *argv[]) {
-	Server hss_server;
-	
+	int status;
+	int i;
+
 	check_server_usage(argc, argv);
 	if(mysql_library_init(0, NULL, NULL))
-		cout << "ERROR: mysql library cannot be opened" << endl;
-	hss_server.begin_thread_pool(atoi(argv[1]), process_req);
-	hss_server.fill_server_details(g_hss_port, g_hss_addr);
-	hss_server.bind_server();
-	hss_server.listen_accept();
-	mysql_library_end();
+		cout << "ERROR: mysql library cannot be opened" << endl;	
+	startup_hss(argv);
+	setup_conn_details();
+	for (i = 0; i < g_tcount; i++) {
+		status = pthread_create(&g_tid[i], NULL, process_reqs, NULL);
+		report_error(status);
+	}
+	for (i = 0; i < g_tcount; i++) {
+		pthread_join(g_tid[i], NULL);
+	}	
+	mysql_library_end();	
 	return 0;
 }

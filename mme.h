@@ -3,74 +3,65 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "server.h"
-#include "thread_pool.h"
-#include "client.h"
-
-struct TunData {
-	uint16_t mme_cteid;
-	uint16_t sgw_cteid;
-	uint16_t sgw_uteid;
-	uint16_t enodeb_uteid;
-	int sgw_port;
-	int pgw_port;
-	char *sgw_addr;
-	char *pgw_addr;
-
-	TunData();
-	TunData(const TunData&);
-	friend void swap(TunData&, TunData&);
-	TunData& operator=(TunData);
-	TunData(TunData&&);
-	~TunData();
-};
+#include "udp_server.h"
+#include "udp_client.h"
+#include "mme_data.h"
 
 struct MME {	
-	Server mme_server;
-	Client to_hss;
-	Client to_sgw;
-	int ue_num;
-	int bearer_id;
+	UDPClient to_hss;
+	UDPClient to_sgw;
+
+	struct sockaddr_in client_sock_addr;
+	Packet pkt;
+
 	int type;
-	char *ue_ip;
-	char *reply;
+	int subtype;
+	int ue_num;
+
+	unsigned long long imsi;
+	unsigned long long msisdn;
 	unsigned long long autn_num;
 	unsigned long long rand_num;
-	unsigned long long autn_xres;
-	unsigned long long autn_res;
-	TunData tun_data;
+	unsigned long long autn_res;	
+
+	int status;
+	string reply;
+	bool success;
 
 	MME();
-	MME(const MME&);
-	friend void swap(MME&, MME&);
-	MME& operator=(MME);
-	MME(MME&&);
-	void set_cteid();
-	uint16_t generate_cteid(int&);
-	void set_bearer_id();
-	int generate_bearer_id(int&);
-	void set_sgw();
-	void set_pgw();
-	void startup_mme_server(ClientDetails&);
-	void set_ue_num();
-	void attach_req_from_ue();
-	void setup_hss_client();
+
+	uint16_t generate_cteid(int);
+	int generate_bearer_id(int);
+	
+	void fill_sgw_details(int);
+	void fill_pgw_details(int);
+	
+	void read_data();
+	void set_metadata();
+
 	void fetch_ue_data();
-	void authenticate_ue();
-	void setup_sgw_client();
+	void store_ue_data();
+	void send_autn_req();
+
+	void process_autn();
 	void create_session_req_to_sgw();
 	void create_session_res_from_sgw();
-	void recv_enodeb();
+
+	void store_enodeb_data();
 	void modify_session_req_to_sgw();
 	void modify_session_res_from_sgw();
-	void send_enodeb();
-	void detach_req_from_ue();
+	void send_attach_res();
+
 	void delete_session_req_to_sgw();
 	void delete_session_res_from_sgw();
-	void detach_res_to_ue();
-	void rem_bearer_id();
-	void rem_tun_data();
+	void send_detach_res();
+	void delete_session_data();
+
 	~MME();
 };
+
+extern UDPServer g_mme_server;
+extern vector<pthread_t> g_tid;
+extern int g_tcount;
 
 #endif //MME_H

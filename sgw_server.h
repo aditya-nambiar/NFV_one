@@ -3,14 +3,22 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "thread_pool.h"
-#include "server.h"
-#include "client.h"
-#include "sgwc.h"
-#include "sgwu.h"
+#include "udp_server.h"
+#include "udp_client.h"
+#include "sgw_data.h"
+#include "sgw.h"
 
 void* process_traffic(void*);
-void handle_cdata(Server&);
-void handle_udata(Server&);
+
+void attach_process(SGW&);
+void create_session(SGW&);
+void modify_session(SGW&);
+
+void data_transfer(SGW&);
+
+void detach_process(SGW&);
+void delete_session(SGW&);
+
+void startup_hss(char**);
 
 #endif //SGW_SERVER_H

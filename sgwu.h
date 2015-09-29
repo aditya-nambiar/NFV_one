@@ -3,9 +3,8 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "thread_pool.h"
-#include "server.h"
-#include "client.h"
+#include "udp_server.h"
+#include "udp_client.h"
 
 #define UDP_LINKS 10
 
