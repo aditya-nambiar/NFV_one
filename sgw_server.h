@@ -15,6 +15,8 @@ void create_session(SGW&);
 void modify_session(SGW&);
 
 void data_transfer(SGW&);
+void uplink_data_transfer(SGW&);
+void downlink_data_transfer(SGW&);
 
 void detach_process(SGW&);
 void delete_session(SGW&);

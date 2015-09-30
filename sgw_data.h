@@ -12,6 +12,8 @@ struct SGWData{
 
 	uint16_t mme_cteid;
 
+	int enodeb_port;
+	string enodeb_addr;
 	uint16_t enodeb_uteid;
 
 	uint16_t sgw_cteid;

@@ -1,17 +1,26 @@
 #include "utils.h"
 
 int g_reuse = 1;
+
 int g_freeport = 0;
 int g_enodeb_port = 5500;
 int g_mme_port = 4000;
 int g_hss_port = 5000;
 int g_sgw1_port = 6000;
-int g_sgw2_port = 7000;
-int g_sgw3_port = 8000;
 int g_pgw_port = 9000;
+int g_pgw_dlink_port = 9500;
 int g_public_sink_port = 5000;
-int g_private_sink_port = 5000;
-int g_pgw_server_for_sink_port = 6000;
+
+string g_enodeb_addr = "10.14.13.29";
+string g_mme_addr = "10.14.13.29";
+string g_hss_addr = "10.14.13.29";
+string g_sgw1_addr = "10.14.13.29";
+string g_pgw_addr = "10.14.13.29";
+string g_pgw_dlink_addr = "10.14.13.29";
+string g_public_sink_addr = "10.14.13.29";
+string g_private_sink_addr = "10.14.13.29";
+
+socklen_t g_addr_len = sizeof(sockaddr_in);
 
 // string g_mme_addr = "192.168.1.70";
 // string g_hss_addr = "192.168.1.70";
@@ -23,20 +32,18 @@ int g_pgw_server_for_sink_port = 6000;
 // string g_public_sink_addr = "192.168.1.78";
 // string g_private_sink_addr = "192.168.100.2";
 
-string g_enodeb_addr = "10.14.13.29";
-string g_mme_addr = "10.14.13.29";
-string g_hss_addr = "10.14.13.29";
-string g_sgw1_addr = "10.14.13.29";
-string g_sgw2_addr = "10.14.13.29";
-string g_sgw3_addr = "10.14.13.29";
-string g_pgw_addr = "10.14.13.29";
-string g_pgw_server_for_sink_addr = "10.14.13.29";
-string g_public_sink_addr = "10.14.13.29";
-string g_private_sink_addr = "10.14.13.29";
-
-socklen_t g_addr_len = sizeof(sockaddr_in);
-struct timeval g_timeout = {5, 0};
-int g_fail_count = 0;
+// int g_sgw2_port = 7000;
+// int g_sgw3_port = 8000;
+// int g_public_sink_port = 5000;
+// int g_private_sink_port = 5000;
+// int g_pgw_server_for_sink_port = 6000;
+// string g_sgw2_addr = "10.14.13.29";
+// string g_sgw3_addr = "10.14.13.29";
+// string g_pgw_server_for_sink_addr = "10.14.13.29";
+// string g_public_sink_addr = "10.14.13.29";
+// string g_private_sink_addr = "10.14.13.29";
+// struct timeval g_timeout = {5, 0};
+// int g_fail_count = 0;
 
 void report_error(int arg) {
 

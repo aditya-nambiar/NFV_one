@@ -49,12 +49,6 @@ void EnodeB::read_tun() {
 	pkt.curr_pos = 0;
 }
 
-void EnodeB::write_tun() {
-
-	status = write(tun_fd, pkt.data, pkt.data_len);
-	report_error(status);
-}
-
 void EnodeB::set_ue_num(){
 	struct ip *iphdr = allocate_ip_mem(IP_LEN);
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
@@ -75,16 +69,20 @@ void EnodeB::set_ue_num(){
 	free(ip_addr);
 }
 
-void EnodeB::send_sgw(){
+void EnodeB::make_uplink_data(){
 
 	type = 2;
 	subtype = 1;
-
-	to_sgw.bind_client();
-	to_sgw.fill_server_details(g_ran_data[ue_num].sgw_port, g_ran_data[ue_num].sgw_addr.c_str());
+	
 	to_sgw.pkt.add_metadata(type, subtype, ue_num);
 	to_sgw.pkt.add_gtpu_hdr(g_ran_data[ue_num].sgw_uteid);
 	to_sgw.pkt.add_data(pkt.data, pkt.data_len);
+}
+
+void EnodeB::send_sgw(){
+
+	to_sgw.bind_client();
+	to_sgw.set_server_details(g_ran_data[ue_num].sgw_port, g_ran_data[ue_num].sgw_addr.c_str());
 	to_sgw.write_data();
 	to_sgw.close_client();
 }
@@ -98,11 +96,15 @@ void EnodeB::recv_sgw(){
 	pkt.curr_pos = 0;
 }
 
-void EnodeB::rem_headers(){
+void EnodeB::set_metadata(){
+
+	pkt.copy_metadata(type, subtype, ue_num);
+}
+
+void EnodeB::make_downlink_data(){
 	Packet temp;
 	int len;
 
-	pkt.copy_metadata(type, subtype, ue_num);
 	pkt.copy_gtpu_hdr();
 	
 	len = (pkt.data_len - pkt.curr_pos);
@@ -111,6 +113,12 @@ void EnodeB::rem_headers(){
 	temp.data_len = len;
 	temp.curr_pos = 0;
 	temp.copy_topkt(pkt);
+}
+
+void EnodeB::write_tun() {
+
+	status = write(tun_fd, pkt.data, pkt.data_len);
+	report_error(status);
 }
 
 EnodeB::~EnodeB() {

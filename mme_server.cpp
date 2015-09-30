@@ -50,6 +50,8 @@ void create_session(MME &mme){
 	mme.process_autn();
 	if(!mme.success)
 		return;
+	mme.set_sgw_details(mme.ue_num);
+	mme.set_pgw_details(mme.ue_num);
 	mme.create_session_req_to_sgw();
 	mme.create_session_res_from_sgw();
 }
@@ -97,6 +99,7 @@ int main(int argc, char *argv[]) {
 	check_server_usage(argc, argv);
 	startup_mme(argv);
 	setup_mme_data();
+
 	for (i = 0; i < g_tcount; i++) {
 		status = pthread_create(&g_tid[i], NULL, process_reqs, NULL);
 		report_error(status);
@@ -104,6 +107,7 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < g_tcount; i++) {
 		pthread_join(g_tid[i], NULL);
 	}		
+	
 	free_mme_data();
 	return 0;
 }

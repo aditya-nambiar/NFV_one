@@ -18,18 +18,6 @@ int MME::generate_bearer_id(int arg_ue_num){
 	return (arg_ue_num);
 }
 
-void MME::fill_sgw_details(int arg_ue_num){
-
-	g_mme_data[arg_ue_num].sgw_port = g_sgw1_port;
-	g_mme_data[arg_ue_num].sgw_addr = g_sgw1_addr;
-}
-
-void MME::fill_pgw_details(int arg_ue_num){
-
-	g_mme_data[arg_ue_num].pgw_port = g_pgw_port;
-	g_mme_data[arg_ue_num].pgw_addr = g_pgw_addr;	
-}
-
 void MME::read_data(){
 
 	pkt.clear_data();
@@ -51,7 +39,7 @@ void MME::fetch_ue_data(){
 	pkt.copy_data(imsi);
 	pkt.copy_data(msisdn);
 	to_hss.bind_client();
-	to_hss.fill_server_details(g_hss_port, g_hss_addr.c_str());
+	to_hss.set_server_details(g_hss_port, g_hss_addr.c_str());
 	to_hss.pkt.add_metadata(type, subtype, ue_num);
 	to_hss.pkt.add_data(imsi);
 	to_hss.pkt.add_data(msisdn);
@@ -99,6 +87,18 @@ void MME::process_autn(){
 	report_error(status);		
 }
 
+void MME::set_sgw_details(int arg_ue_num){
+
+	g_mme_data[arg_ue_num].sgw_port = g_sgw1_port;
+	g_mme_data[arg_ue_num].sgw_addr = g_sgw1_addr;
+}
+
+void MME::set_pgw_details(int arg_ue_num){
+
+	g_mme_data[arg_ue_num].pgw_port = g_pgw_port;
+	g_mme_data[arg_ue_num].pgw_addr = g_pgw_addr;	
+}
+
 void MME::create_session_req_to_sgw(){
 	
 	type = 1;
@@ -106,11 +106,9 @@ void MME::create_session_req_to_sgw(){
 
 	g_mme_data[ue_num].bearer_id = generate_bearer_id(ue_num);
 	g_mme_data[ue_num].mme_cteid = generate_cteid(ue_num);
-	fill_sgw_details(ue_num);
-	fill_pgw_details(ue_num);
 	
 	to_sgw.bind_client();
-	to_sgw.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
+	to_sgw.set_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
 	to_sgw.pkt.add_metadata(type, subtype, ue_num);
 	to_sgw.pkt.add_data(g_mme_data[ue_num].bearer_id);
 	to_sgw.pkt.add_data(g_mme_data[ue_num].mme_cteid);
@@ -137,7 +135,7 @@ void MME::modify_session_req_to_sgw(){
 	subtype = 4;
 
 	to_sgw.bind_client();
-	to_sgw.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
+	to_sgw.set_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
 	to_sgw.pkt.add_metadata(type, subtype, ue_num);
 	to_sgw.pkt.add_data(g_mme_data[ue_num].enodeb_uteid);
 	to_sgw.pkt.add_gtpc_hdr(g_mme_data[ue_num].sgw_cteid);
@@ -182,7 +180,7 @@ void MME::delete_session_req_to_sgw(){
 	subtype = 1;
 
 	to_sgw.bind_client();
-	to_sgw.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
+	to_sgw.set_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
 	to_sgw.pkt.add_metadata(type, subtype, ue_num);
 	to_sgw.pkt.add_gtpc_hdr(g_mme_data[ue_num].sgw_cteid);
 	to_sgw.write_data();

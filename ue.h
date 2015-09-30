@@ -30,7 +30,7 @@ struct UE {
 
 	unsigned long long generate_key(int&);
 	
-	void fill_mme_details();
+	void set_mme_details();
 	void startup_mme_client();
 
 	void send_attach_req();

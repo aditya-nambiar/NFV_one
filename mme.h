@@ -32,10 +32,7 @@ struct MME {
 
 	uint16_t generate_cteid(int);
 	int generate_bearer_id(int);
-	
-	void fill_sgw_details(int);
-	void fill_pgw_details(int);
-	
+		
 	void read_data();
 	void set_metadata();
 
@@ -44,6 +41,8 @@ struct MME {
 	void send_autn_req();
 
 	void process_autn();
+	void set_sgw_details(int);
+	void set_pgw_details(int);	
 	void create_session_req_to_sgw();
 	void create_session_res_from_sgw();
 

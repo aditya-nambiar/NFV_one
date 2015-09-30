@@ -41,6 +41,7 @@ void attach_process(SGW &sgw){
 void create_session(SGW &sgw){
 
 	sgw.store_create_session_data();
+	sgw.set_pgw_details(sgw.ue_num);
 	sgw.create_session_req_to_pgw();
 	sgw.create_session_res_from_pgw();
 	sgw.create_session_res_to_mme();
@@ -48,13 +49,38 @@ void create_session(SGW &sgw){
 
 void modify_session(SGW &sgw){
 
+	sgw.set_enodeb_details(sgw.ue_num);
 	sgw.store_modify_session_data();
 	sgw.modify_session_res_to_mme();
 }
 
 void data_transfer(SGW &sgw){
 
+	if(sgw.subtype == 1){
+		uplink_data_transfer(sgw);
+	}
+	else if(sgw.subtype == 2){
+		downlink_data_transfer(sgw);
+	}
+	else{
+		cout << "Incorrect subtype for type - 2 -> " << sgw.subtype << endl;
+	}
+}
 
+void uplink_data_transfer(SGW &sgw){
+
+	if(g_sgw_data[sgw.ue_num].valid == true){
+		sgw.make_uplink_data();
+		sgw.send_pgw();
+	}
+}
+
+void downlink_data_transfer(SGW &sgw){
+
+	if(g_sgw_data[sgw.ue_num].valid == true){
+		sgw.make_downlink_data();
+		sgw.send_enodeb();
+	}
 }
 
 void detach_process(SGW &sgw){
@@ -76,50 +102,6 @@ void delete_session(SGW &sgw){
 		sgw.delete_session_data();
 	}
 }
-
-// void handle_udata(Server &sgw_server) {
-// 	SGWu sgwu;
-// 	fd_set read_set;
-// 	int max_fd;
-// 	int size;
-// 	int i;
-// 	int status;
-// 	bool data_invalid;
-
-// 	while (1) {
-// 		FD_ZERO(&read_set);
-// 		FD_SET(sgw_server.server_socket, &read_set); 
-// 		max_fd = sgw_server.server_socket;
-// 		size = sgwu.pos;
-// 		for (i = 0; i < size; i++) {
-// 			FD_SET(sgwu.to_pgw[i].client_socket, &read_set); 
-// 			max_fd = max(max_fd, sgwu.to_pgw[i].client_socket);
-// 		}
-// 		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-// 		report_error(status, "Select-process failure\tTry again");		
-// 		if (FD_ISSET(sgw_server.server_socket, &read_set)) {
-// 			sgwu.recv_enodeb(sgw_server);
-// 			sgwu.set_uteid();
-// 			sgwu.set_tun_udata(data_invalid);
-// 			if (data_invalid)
-// 				continue;
-// 			sgwu.set_pgw_num();
-// 			sgwu.make_data_pgw();
-// 			sgwu.send_pgw();
-// 		}
-// 		for (i = 0; i < size; i++) {
-// 			if (FD_ISSET(sgwu.to_pgw[i].client_socket, &read_set)) {
-// 				sgwu.recv_pgw(i);
-// 				sgwu.set_uteid();
-// 				sgwu.set_tun_udata(data_invalid);
-// 				if (data_invalid)
-// 					continue;				
-// 				sgwu.make_data_enodeb();
-// 				sgwu.send_enodeb(sgw_server);
-// 			}
-// 		}
-// 	}
-// }
 
 void startup_sgw(char *argv[]){
 

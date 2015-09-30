@@ -1,9 +1,14 @@
 #include "ran.h"
 
 EnodeB g_enodeb;
+
 int g_total_connections;
 double g_req_duration;
 time_t g_start_time;
+
+vector<int> g_ue_num;
+pthread_t g_mon_tid;
+vector<pthread_t> g_tid;
 
 void setup_tun() {
 
@@ -44,14 +49,20 @@ void uplink_data_transfer(){
 
 	g_enodeb.read_tun();
 	g_enodeb.set_ue_num();
-	g_enodeb.send_sgw();
+	if(g_ran_data[g_enodeb.ue_num].valid == true){
+		g_enodeb.make_uplink_data();
+		g_enodeb.send_sgw();
+	}
 }
 
 void downlink_data_transfer(){
 
 	g_enodeb.recv_sgw();
-	g_enodeb.rem_headers();
-	g_enodeb.write_tun();
+	g_enodeb.set_metadata();
+	if(g_ran_data[g_enodeb.ue_num].valid == true){
+		g_enodeb.make_downlink_data();
+		g_enodeb.write_tun();		
+	}
 }
 
 void* generate_traffic(void *arg) {
@@ -61,7 +72,7 @@ void* generate_traffic(void *arg) {
 	ue_num = *((int*)arg);
 	time_exceeded = false;
 	UE ue(ue_num);
-	ue.fill_mme_details();
+	ue.set_mme_details();
 	ue.startup_mme_client();
 	while (1) {
 		authenticate(ue);
@@ -118,36 +129,36 @@ void detach(UE &ue) {
 	}
 }
 
-void startup_ran(char *argv[], vector<int> &ue_num, vector<pthread_t> &tid) {
+void startup_ran(char *argv[]) {
 
 	g_start_time = time(0);
 	g_total_connections = atoi(argv[1]);
 	g_req_duration = atof(argv[2]);
-	ue_num.resize(g_total_connections);
-	tid.resize(g_total_connections);
+	g_ue_num.resize(g_total_connections);
+	g_tid.resize(g_total_connections);
 }
 
 int main(int argc, char *argv[]) {
-	int i;
 	int status;
-	vector<int> ue_num;
-	pthread_t mon_tid;
-	vector<pthread_t> tid;
-
+	int i;
+	
 	check_client_usage(argc, argv);
-	startup_ran(argv, ue_num, tid);
+	startup_ran(argv);
 	setup_ran_data();
 	setup_tun();
-	status = pthread_create(&mon_tid, NULL, monitor_traffic, NULL);
+	
+	status = pthread_create(&g_mon_tid, NULL, monitor_traffic, NULL);
 	report_error(status);
+	
 	for (i = 0; i < g_total_connections; i++) {
-		ue_num[i] = i;
-		status = pthread_create(&tid[i], NULL, generate_traffic, &ue_num[i]);
+		g_ue_num[i] = i;
+		status = pthread_create(&g_tid[i], NULL, generate_traffic, &g_ue_num[i]);
 		report_error(status);
 	}
 	for (i = 0; i < g_total_connections; i++) {
-		pthread_join(tid[i],NULL);
+		pthread_join(g_tid[i],NULL);
 	}
+	
 	free_ran_data();
 	cout << "Requested duration has ended. Finishing the program." << endl;
 	return 0;

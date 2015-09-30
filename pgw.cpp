@@ -2,6 +2,7 @@
 
 UDPServer g_pgw_server;
 vector<pthread_t> g_tid;
+pthread_t g_downlink_tid;
 int g_tcount;
 
 vector<string> g_ip_table;
@@ -35,6 +36,12 @@ void PGW::set_metadata(){
 	pkt.copy_metadata(type, subtype, ue_num);
 }
 
+void PGW::set_sgw_details(int arg_ue_num){
+
+	g_pgw_data[arg_ue_num].sgw_port = g_sgw1_port;
+	g_pgw_data[arg_ue_num].sgw_addr = g_sgw1_addr;
+}
+
 void PGW::store_create_session_data(){
 
 	pkt.copy_data(g_pgw_data[ue_num].bearer_id);
@@ -64,6 +71,40 @@ void PGW::create_session_res_to_sgw(){
 	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;
 }
 
+void PGW::add_map_entry(){
+
+	if(g_pgw_data[ue_num].valid == true){
+		string key = g_pgw_data[ue_num].ue_ip;
+		int value = g_pgw_data[ue_num].ue_num;
+
+		status = pthread_mutex_lock(&g_lock);
+		report_error(status, "Error in thread locking");
+
+		g_ue_maptable[key] = value;
+
+		status = pthread_mutex_unlock(&g_lock);
+		report_error(status, "Error in thread unlocking");
+	}
+}
+
+void PGW::make_uplink_data(){
+
+	int len;
+
+	pkt.copy_gtpu_hdr();
+	len = (pkt.data_len - pkt.curr_pos);
+	to_public_sink.pkt.clear_data();
+	to_public_sink.pkt.add_data(pkt.data + pkt.curr_pos, len);	
+}
+
+void PGW::send_public_sink(){
+
+	to_public_sink.bind_client();
+	to_public_sink.set_server_details(g_public_sink_port, g_public_sink_addr.c_str());
+	to_public_sink.write_data();
+	to_public_sink.close_client();
+}
+
 void PGW::delete_session_res_to_sgw(){
 
 	success = 1;
@@ -84,6 +125,18 @@ void PGW::delete_session_res_to_sgw(){
 void PGW::delete_session_data(){
 
 	g_pgw_data[ue_num].valid = false;
+
+	if(g_pgw_data[ue_num].valid == false){
+		string key = g_pgw_data[ue_num].ue_ip;
+
+		status = pthread_mutex_lock(&g_lock);
+		report_error(status, "Error in thread locking");
+
+		// g_ue_maptable.erase(key); // Commented this because data validity is checked using valid bit while sending data
+
+		status = pthread_mutex_unlock(&g_lock);
+		report_error(status, "Error in thread unlocking");
+	}
 }
 
 PGW::~PGW() {

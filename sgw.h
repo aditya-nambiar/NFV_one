@@ -9,6 +9,7 @@
 
 struct SGW {
 	UDPClient to_pgw;
+	UDPClient to_enodeb;
 
 	struct sockaddr_in client_sock_addr;
 	Packet pkt;
@@ -26,18 +27,24 @@ struct SGW {
 	uint16_t generate_cteid(int);
 	uint16_t generate_uteid(int);
 
-	void fill_pgw_details(int);
-
 	void read_data();
 	void set_metadata();
 
 	void store_create_session_data();
+	void set_pgw_details(int);
 	void create_session_req_to_pgw();
 	void create_session_res_from_pgw();
 	void create_session_res_to_mme();
 
+	void set_enodeb_details(int);
 	void store_modify_session_data();
 	void modify_session_res_to_mme();
+
+	void make_uplink_data();
+	void send_pgw();
+
+	void make_downlink_data();
+	void send_enodeb();
 
 	void delete_session_req_to_pgw();
 	void delete_session_res_from_pgw();

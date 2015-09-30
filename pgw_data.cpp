@@ -2,6 +2,9 @@
 
 struct PGWData *g_pgw_data;
 
+unordered_map<string, int> g_ue_maptable;
+pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
+
 PGWData::PGWData(){
 
 	valid = false;

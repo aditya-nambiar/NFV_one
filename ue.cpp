@@ -13,7 +13,7 @@ unsigned long long UE::generate_key(int &ue_num) {
 	return ue_num;
 }
 
-void UE::fill_mme_details(){
+void UE::set_mme_details(){
 
 	g_ran_data[ue_num].mme_port = g_mme_port;
 	g_ran_data[ue_num].mme_addr = g_mme_addr;
@@ -22,7 +22,7 @@ void UE::fill_mme_details(){
 void UE::startup_mme_client(){
 
 	to_mme.bind_client();
-	to_mme.fill_server_details(g_ran_data[ue_num].mme_port, g_ran_data[ue_num].mme_addr.c_str());
+	to_mme.set_server_details(g_ran_data[ue_num].mme_port, g_ran_data[ue_num].mme_addr.c_str());
 }
 
 void UE::send_attach_req(){
@@ -210,11 +210,11 @@ void UE::delete_session_data(){
 
 	if(g_ran_data[ue_num].valid == false){
 		string key = g_ran_data[ue_num].ue_ip;
-		
+
 		status = pthread_mutex_lock(&g_lock);
 		report_error(status, "Error in thread locking");
 
-		// g_ue_maptable.erase(key); // Commented to make sure I won't get iperf server busy error
+		// g_ue_maptable.erase(key); // Commented this because data validity is checked using valid bit while sending data
 
 		status = pthread_mutex_unlock(&g_lock);
 		report_error(status, "Error in thread unlocking");

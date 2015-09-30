@@ -18,12 +18,6 @@ uint16_t SGW::generate_uteid(int arg_ue_num){
 	return (arg_ue_num);
 }
 
-void SGW::fill_pgw_details(int arg_ue_num){
-
-	g_sgw_data[arg_ue_num].pgw_port = g_pgw_port;
-	g_sgw_data[arg_ue_num].pgw_addr = g_pgw_addr;
-}
-
 void SGW::read_data(){
 
 	pkt.clear_data();
@@ -44,6 +38,12 @@ void SGW::store_create_session_data(){
 	pkt.copy_data(g_sgw_data[ue_num].mme_cteid);
 }
 
+void SGW::set_pgw_details(int arg_ue_num){
+
+	g_sgw_data[arg_ue_num].pgw_port = g_pgw_port;
+	g_sgw_data[arg_ue_num].pgw_addr = g_pgw_addr;
+}
+
 void SGW::create_session_req_to_pgw(){
 
 	type = 1;
@@ -51,10 +51,9 @@ void SGW::create_session_req_to_pgw(){
 
 	g_sgw_data[ue_num].sgw_cteid = generate_cteid(ue_num);
 	g_sgw_data[ue_num].sgw_uteid = generate_uteid(ue_num);
-	fill_pgw_details(ue_num);
 
 	to_pgw.bind_client();
-	to_pgw.fill_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
+	to_pgw.set_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
 	to_pgw.pkt.add_metadata(type, subtype, ue_num);
 	to_pgw.pkt.add_data(g_sgw_data[ue_num].bearer_id);
 	to_pgw.pkt.add_data(g_sgw_data[ue_num].sgw_cteid);
@@ -92,6 +91,12 @@ void SGW::create_session_res_to_mme(){
 	report_error(status);	
 }
 
+void SGW::set_enodeb_details(int arg_ue_num){
+
+	g_sgw_data[arg_ue_num].enodeb_port = g_enodeb_port;
+	g_sgw_data[arg_ue_num].enodeb_addr = g_enodeb_addr;
+}
+
 void SGW::store_modify_session_data(){
 
 	pkt.copy_gtpc_hdr();
@@ -116,13 +121,55 @@ void SGW::modify_session_res_to_mme(){
 	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;	
 }
 
+void SGW::make_uplink_data(){
+	int len;
+
+	type = 2;
+	subtype = 1;
+
+	pkt.copy_gtpu_hdr();
+	len = (pkt.data_len - pkt.curr_pos);
+	to_pgw.pkt.add_metadata(type, subtype, ue_num);
+	to_pgw.pkt.add_gtpu_hdr(g_sgw_data[ue_num].pgw_uteid);
+	to_pgw.pkt.add_data(pkt.data + pkt.curr_pos, len);
+}
+
+void SGW::send_pgw(){
+
+	to_pgw.bind_client();
+	to_pgw.set_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
+	to_pgw.write_data();
+	to_pgw.close_client();
+}
+
+void SGW::make_downlink_data(){
+	int len;
+
+	type = 2;
+	subtype = 2;
+
+	pkt.copy_gtpu_hdr();
+	len = (pkt.data_len - pkt.curr_pos);
+	to_enodeb.pkt.add_metadata(type, subtype, ue_num);
+	to_enodeb.pkt.add_gtpu_hdr(g_sgw_data[ue_num].enodeb_uteid);
+	to_enodeb.pkt.add_data(pkt.data + pkt.curr_pos, len);
+}
+
+void SGW::send_enodeb(){
+
+	to_enodeb.bind_client();
+	to_enodeb.set_server_details(g_sgw_data[ue_num].enodeb_port, g_sgw_data[ue_num].enodeb_addr.c_str());
+	to_enodeb.write_data();
+	to_enodeb.close_client();
+}
+
 void SGW::delete_session_req_to_pgw(){
 
 	type = 3;
 	subtype = 1;
 
 	to_pgw.bind_client();
-	to_pgw.fill_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
+	to_pgw.set_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
 	to_pgw.pkt.add_metadata(type, subtype, ue_num);
 	to_pgw.pkt.add_gtpc_hdr(g_sgw_data[ue_num].pgw_cteid);
 	to_pgw.write_data();

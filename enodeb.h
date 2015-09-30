@@ -31,17 +31,17 @@ struct EnodeB {
 	uint16_t generate_uteid(int);
 
 	void startup_enodeb_server();
-
 	void attach_to_tun();
+
 	void read_tun();
-	void write_tun();
-
 	void set_ue_num();
-
+	void make_uplink_data();
 	void send_sgw();
+	
 	void recv_sgw();
-
-	void rem_headers();
+	void set_metadata();
+	void make_downlink_data();
+	void write_tun();
 
 	~EnodeB();
 };

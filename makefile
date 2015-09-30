@@ -21,8 +21,8 @@ HSS_CPP = utils.cpp packet.cpp udp_server.cpp mysql.cpp hss.cpp
 SGW_H = utils.h packet.h udp_server.h udp_client.h sgw_data.h sgw.h
 SGW_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp sgw_data.cpp sgw.cpp
 
-PGW_H = utils.h packet.h udp_server.h udp_client.h pgw_data.h pgw.h
-PGW_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp pgw_data.cpp pgw.cpp
+PGW_H = utils.h packet.h udp_server.h udp_client.h pgw_data.h pgw_dlink.h pgw.h
+PGW_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp pgw_data.cpp pgw_dlink.cpp pgw.cpp
 
 # SINK_H = utils.h packet.h thread_pool.h server.h client.h sink_monitor.h
 # SINK_CPP = utils.cpp packet.cpp thread_pool.cpp server.cpp client.cpp sink_monitor.cpp

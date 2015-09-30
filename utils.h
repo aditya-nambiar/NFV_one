@@ -53,31 +53,39 @@ using namespace std;
 #define BUF_SIZE 1024
 
 extern int g_reuse;
+
 extern int g_freeport;
 extern int g_enodeb_port;
 extern int g_mme_port;
 extern int g_hss_port;
 extern int g_sgw1_port;
-extern int g_sgw2_port;
-extern int g_sgw3_port;
 extern int g_pgw_port;
+extern int g_pgw_dlink_port;
 extern int g_public_sink_port;
-extern int g_private_sink_port;
-extern int g_pgw_server_for_sink_port;
 
 extern string g_enodeb_addr;
 extern string g_mme_addr;
 extern string g_hss_addr;
 extern string g_sgw1_addr;
-extern string g_sgw2_addr;
-extern string g_sgw3_addr;
 extern string g_pgw_addr;
+extern string g_pgw_dlink_addr;
 extern string g_public_sink_addr;
 extern string g_private_sink_addr;
-extern string g_pgw_server_for_sink_addr;
+
 extern socklen_t g_addr_len;
-extern struct timeval g_timeout;
-extern int g_fail_count;
+
+// extern int g_sgw3_port;
+// extern int g_sgw2_port;
+// extern int g_public_sink_port;
+// extern int g_private_sink_port;
+// extern int g_pgw_server_for_sink_port;
+// extern string g_sgw2_addr;
+// extern string g_sgw3_addr;
+// extern string g_public_sink_addr;
+// extern string g_private_sink_addr;
+// extern string g_pgw_server_for_sink_addr;
+// extern struct timeval g_timeout;
+// extern int g_fail_count;
 
 void report_error(int);
 void report_error(int, const char*);

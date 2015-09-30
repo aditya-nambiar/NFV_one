@@ -10,6 +10,8 @@ struct PGWData{
 	int bearer_id;
 	string ue_ip;
 
+	int sgw_port;
+	string sgw_addr;
 	uint16_t sgw_cteid;
 	uint16_t sgw_uteid;
 	
@@ -22,6 +24,9 @@ struct PGWData{
 };
 
 extern struct PGWData *g_pgw_data;
+
+extern unordered_map<string, int> g_ue_maptable; // Data race cannot occur because of usage of Mutex lock
+extern pthread_mutex_t g_lock; // To lock g_ue_maptable
 
 void setup_pgw_data();
 void free_pgw_data();

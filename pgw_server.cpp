@@ -1,24 +1,23 @@
 #include "pgw_server.h"
 
-// void setup_tun() {
+void* process_downlink_traffic(void *arg) {
+	PGWDlink pgw_dlink;
 
-// 	system("sudo openvpn --rmtun --dev tun1");
-// 	system("sudo openvpn --mktun --dev tun1");
-// 	system("sudo ip link set tun1 up");
-// 	system("sudo ip addr add 192.168.100.1/24 dev tun1");
-// }
+	while(1){
+		downlink_data_transfer(pgw_dlink);
+	}
+	return NULL;
+}
 
-// void* monitor_traffic(void *arg) {
-// 	PGWcMonitor pgwc_monitor;
+void downlink_data_transfer(PGWDlink &pgw_dlink){
 
-// 	pgwc_monitor.attach_to_tun();
-// 	pgwc_monitor.attach_to_sink();
-// 	cout << "PGW Monitoring started " << endl;
-// 	while (1) {
-// 		pgwc_monitor.read_tun();
-// 		pgwc_monitor.write_sink();		
-// 	}
-// }
+	pgw_dlink.read_data();
+	pgw_dlink.set_ue_num();
+	if(g_pgw_data[pgw_dlink.ue_num].valid == true){
+		pgw_dlink.make_downlink_data();
+		pgw_dlink.send_sgw();			
+	}
+}
 
 void* process_traffic(void *arg) {
 	PGW pgw;
@@ -57,13 +56,28 @@ void attach_process(PGW &pgw){
 
 void create_session(PGW &pgw){
 
+	pgw.set_sgw_details(pgw.ue_num);
 	pgw.store_create_session_data();
 	pgw.create_session_res_to_sgw();
+	pgw.add_map_entry();
 }
 
 void data_transfer(PGW &pgw){
 
+	if(pgw.subtype == 1){
+		uplink_data_transfer(pgw);
+	}
+	else{
+		cout << "Incorrect subtype for type 2 -> " << pgw.subtype << endl;	
+	}
+}
 
+void uplink_data_transfer(PGW &pgw){
+
+	if(g_pgw_data[pgw.ue_num].valid == true){
+		pgw.make_uplink_data();
+		pgw.send_public_sink();
+	}	
 }
 
 void detach_process(PGW &pgw){
@@ -84,45 +98,14 @@ void delete_session(PGW &pgw){
 	}
 }
 
-// void handle_udata(Server &pgw_server) {
-// 	PGWu pgwu;
-// 	fd_set read_set;
-// 	int max_fd;
-// 	int size;
-// 	int i;
-// 	int status;
-// 	bool data_invalid;
-	
-// 	pgwu.configure_raw_client();
-// 	pgwu.configure_server_for_sink();
-// 	while (1) {
-// 		FD_ZERO(&read_set);
-// 		FD_SET(pgw_server.server_socket, &read_set); 
-// 		FD_SET(pgwu.for_sink.server_socket, &read_set); 
-// 		max_fd = max(pgw_server.server_socket, pgwu.for_sink.server_socket);
-// 		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-// 		report_error(status, "Select-process failure\tTry again");		
-// 		if (FD_ISSET(pgw_server.server_socket, &read_set)) {
-// 			pgwu.recv_sgw(pgw_server);
-// 			pgwu.send_raw_socket();		
-// 		}
-// 		if (FD_ISSET(pgwu.for_sink.server_socket, &read_set)) {
-// 			pgwu.recv_sink();
-// 			pgwu.set_ue_ip();
-// 			pgwu.set_tun_udata(data_invalid);
-// 			if (data_invalid)
-// 				continue;
-// 			pgwu.send_sgw(pgw_server);	
-// 		}
-// 	}
-// }
-
 void startup_pgw(char *argv[]){
 
 	g_tcount = atoi(argv[1]);
 	g_tid.resize(g_tcount);
 	g_pgw_server.bind_server(g_pgw_port, g_pgw_addr.c_str());
 	g_pgw_server.print_status("PGW");		
+	g_pgw_dlink_server.bind_server(g_pgw_dlink_port, g_pgw_dlink_addr.c_str());
+	g_pgw_dlink_server.print_status("PGW Downlink Server");
 }
 
 int main(int argc, char *argv[]) {
@@ -134,6 +117,9 @@ int main(int argc, char *argv[]) {
 	setup_pgw_data();
 	generate_ip_table();
 
+	status = pthread_create(&g_downlink_tid, NULL, process_downlink_traffic, NULL);
+	report_error(status);	
+
 	for (i = 0; i < g_tcount; i++) {
 		status = pthread_create(&g_tid[i], NULL, process_traffic, NULL);
 		report_error(status);
@@ -144,8 +130,4 @@ int main(int argc, char *argv[]) {
 
 	free_pgw_data();
 	return 0;
-
-	// setup_tun();
-	// status = pthread_create(&mon_tid, NULL, monitor_traffic, NULL);
-	// report_error(status);	
 }

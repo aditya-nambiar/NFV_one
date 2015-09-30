@@ -24,7 +24,7 @@ void UDPClient::bind_client() {
 	//cout << "client binded with port " << client_port << endl;
 }
 
-void UDPClient::fill_server_details(int arg_server_port, const char *arg_server_addr) {
+void UDPClient::set_server_details(int arg_server_port, const char *arg_server_addr) {
 	
 	server_port = arg_server_port;
 	server_addr.assign(arg_server_addr);
@@ -63,6 +63,7 @@ void UDPClient::close_client(){
 
 UDPClient::~UDPClient() {
 	
-	if (client_socket >= 0)
+	if (client_socket >= 0){
 		close(client_socket);
+	}
 }
