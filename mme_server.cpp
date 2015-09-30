@@ -8,7 +8,7 @@ void* process_reqs(void *arg) {
 		if(mme.status == 0)
 			continue;
 		mme.set_metadata();
-		
+
 		if(mme.type == 1){
 			attach_process(mme);
 		}
@@ -77,7 +77,9 @@ void delete_session(MME &mme){
 	mme.delete_session_req_to_sgw();
 	mme.delete_session_res_from_sgw();
 	mme.send_detach_res();
-	mme.delete_session_data();
+	if(mme.success == 1){
+		mme.delete_session_data();
+	}
 }
 
 void startup_mme(char *argv[]){

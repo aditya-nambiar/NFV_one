@@ -8,7 +8,7 @@ void* process_traffic(void *arg) {
 		if(sgw.status == 0)
 			continue;
 		sgw.set_metadata();
-		
+
 		if(sgw.type == 1){	
 			attach_process(sgw);
 		}
@@ -72,7 +72,9 @@ void delete_session(SGW &sgw){
 	sgw.delete_session_req_to_pgw();
 	sgw.delete_session_res_from_pgw();
 	sgw.delete_session_res_to_mme();
-	sgw.delete_session_data();
+	if(sgw.success == 1){
+		sgw.delete_session_data();
+	}
 }
 
 // void handle_udata(Server &sgw_server) {

@@ -53,11 +53,11 @@ struct Packet {
 	void add_metadata(int, int, int);	
 	void copy_metadata(int&, int&, int&);
 	
-	void clear_data();
-
 	void copy_pkts(Packet&, Packet&);
 	void copy_frompkt(Packet&);
 	void copy_topkt(Packet&);
+
+	void clear_data();
 
 	~Packet();
 };

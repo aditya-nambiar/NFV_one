@@ -109,21 +109,21 @@ void MME::create_session_req_to_sgw(){
 	fill_sgw_details(ue_num);
 	fill_pgw_details(ue_num);
 	
-	to_hss.bind_client();
-	to_hss.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
-	to_hss.pkt.add_metadata(type, subtype, ue_num);
-	to_hss.pkt.add_data(g_mme_data[ue_num].bearer_id);
-	to_hss.pkt.add_data(g_mme_data[ue_num].mme_cteid);
-	to_hss.write_data();
+	to_sgw.bind_client();
+	to_sgw.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
+	to_sgw.pkt.add_metadata(type, subtype, ue_num);
+	to_sgw.pkt.add_data(g_mme_data[ue_num].bearer_id);
+	to_sgw.pkt.add_data(g_mme_data[ue_num].mme_cteid);
+	to_sgw.write_data();
 }
 
 void MME::create_session_res_from_sgw(){
 
-	to_hss.read_data();
-	to_hss.close_client();
-	to_hss.pkt.copy_metadata(type, subtype, ue_num);
-	to_hss.pkt.copy_gtpc_hdr();
-	to_hss.pkt.copy_data(g_mme_data[ue_num].sgw_cteid);
+	to_sgw.read_data();
+	to_sgw.close_client();
+	to_sgw.pkt.copy_metadata(type, subtype, ue_num);
+	to_sgw.pkt.copy_gtpc_hdr();
+	to_sgw.pkt.copy_data(g_mme_data[ue_num].sgw_cteid);
 }
 
 void MME::store_enodeb_data(){
@@ -136,24 +136,24 @@ void MME::modify_session_req_to_sgw(){
 	type = 1;
 	subtype = 4;
 
-	to_hss.bind_client();
-	to_hss.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
-	to_hss.pkt.add_metadata(type, subtype, ue_num);
-	to_hss.pkt.add_data(g_mme_data[ue_num].enodeb_uteid);
-	to_hss.pkt.add_gtpc_hdr(g_mme_data[ue_num].sgw_cteid);
-	to_hss.write_data();
+	to_sgw.bind_client();
+	to_sgw.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
+	to_sgw.pkt.add_metadata(type, subtype, ue_num);
+	to_sgw.pkt.add_data(g_mme_data[ue_num].enodeb_uteid);
+	to_sgw.pkt.add_gtpc_hdr(g_mme_data[ue_num].sgw_cteid);
+	to_sgw.write_data();
 }
 
 void MME::modify_session_res_from_sgw(){
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 	int len = INET_ADDRSTRLEN;
 
-	to_hss.read_data();
-	to_hss.close_client();
-	to_hss.pkt.copy_metadata(type, subtype, ue_num);
-	to_hss.pkt.copy_gtpc_hdr();
-	to_hss.pkt.copy_data(g_mme_data[ue_num].sgw_uteid);
-	to_hss.pkt.copy_data(ip_addr, len);
+	to_sgw.read_data();
+	to_sgw.close_client();
+	to_sgw.pkt.copy_metadata(type, subtype, ue_num);
+	to_sgw.pkt.copy_gtpc_hdr();
+	to_sgw.pkt.copy_data(g_mme_data[ue_num].sgw_uteid);
+	to_sgw.pkt.copy_data(ip_addr, len);
 	
 	g_mme_data[ue_num].ue_ip.assign(ip_addr);
 	g_mme_data[ue_num].valid = true;
@@ -172,26 +172,69 @@ void MME::send_attach_res(){
 	
 	status = sendto(g_mme_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
 	report_error(status);			
+
+	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;
 }
 
 void MME::delete_session_req_to_sgw(){
 
+	type = 3;
+	subtype = 1;
 
+	to_sgw.bind_client();
+	to_sgw.fill_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
+	to_sgw.pkt.add_metadata(type, subtype, ue_num);
+	to_sgw.pkt.add_gtpc_hdr(g_mme_data[ue_num].sgw_cteid);
+	to_sgw.write_data();
 }
 
 void MME::delete_session_res_from_sgw(){
+	char *res = allocate_str_mem(BUF_SIZE);
+	int len;
 
+	to_sgw.read_data();
+	to_sgw.close_client();
+	to_sgw.pkt.copy_metadata(type, subtype, ue_num);
+	to_sgw.pkt.copy_gtpc_hdr();
+	len = (to_sgw.pkt.data_len - to_sgw.pkt.curr_pos);
+	to_sgw.pkt.copy_data(res, len);
 
+	reply.assign(res);
+	cout << "This is the delete session reply - " << reply << " , for UE - " << ue_num << endl;
+	if(reply == "OK"){
+		success = 1;
+		cout << "Detach request has been successful at MME for UE  - " << ue_num << endl;
+	}
+	else{
+		success = 0;
+		cout << "Detach request has not been successful at MME for UE  - " << ue_num << endl;		
+	}
+
+	free(res);
 }
 
 void MME::send_detach_res(){
 
+	type = 3;
+	subtype = 1;
 
-}
+	if(success == 1){
+		reply = "OK";
+	}
+	else{
+		reply = "FAILURE";
+	}
+
+	pkt.add_metadata(type, subtype, ue_num);
+	pkt.add_data(reply);
+
+	status = sendto(g_mme_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
+	report_error(status);			
+}	
 
 void MME::delete_session_data(){
 
-	
+	g_mme_data[ue_num].valid = false;
 }
 
 MME::~MME() {

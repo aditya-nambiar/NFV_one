@@ -184,3 +184,5 @@ On receiving Delete session response from SGW, MME removes the TUN data such as 
 
 MME to RAN(Plain)
 OK
+
+Lock used only on unordered_map stl and not on struct array. This is because, unordered_map is unpredictable on concurrent access and just raw array is not like that, hence lock used only on unordered_map stl.

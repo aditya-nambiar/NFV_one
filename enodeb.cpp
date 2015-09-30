@@ -9,6 +9,11 @@ uint16_t EnodeB::generate_uteid(int ue_num) {
 	return ue_num;
 }
 
+void EnodeB::startup_enodeb_server(){
+
+	enodeb_server.bind_server(g_enodeb_port, g_enodeb_addr.c_str());
+}
+
 void EnodeB::attach_to_tun() {	
 	struct ifreq ifr;
 	const char *dev = "/dev/net/tun";
@@ -17,6 +22,7 @@ void EnodeB::attach_to_tun() {
 
 	tun_name = "tun1";
 	flags = (IFF_TUN | IFF_NO_PI);
+
 	tun_fd = open(dev , O_RDWR);
 	report_error(tun_fd, "Opening /dev/net/tun");
 	memset(&ifr, 0, sizeof(ifr));
@@ -40,6 +46,7 @@ void EnodeB::read_tun() {
 	status = read(tun_fd, pkt.data, BUF_SIZE);
 	report_error(status);
 	pkt.data_len = status;
+	pkt.curr_pos = 0;
 }
 
 void EnodeB::write_tun() {
@@ -48,64 +55,63 @@ void EnodeB::write_tun() {
 	report_error(status);
 }
 
-void EnodeB::set_ue_ip() {
+void EnodeB::set_ue_num(){
 	struct ip *iphdr = allocate_ip_mem(IP_LEN);
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 
 	memmove(iphdr, pkt.data, IP_LEN * sizeof(uint8_t));
 	inet_ntop(AF_INET, &(iphdr->ip_src), ip_addr, INET_ADDRSTRLEN);
 	ue_ip.assign(ip_addr);
-	// cout << "Through tunnel: UE IP is " << ue_ip << endl;
+	
+	status = pthread_mutex_lock(&g_lock);
+	report_error(status, "Error in thread locking");
+
+	ue_num = g_ue_maptable[ue_ip];
+
+	status = pthread_mutex_unlock(&g_lock);
+	report_error(status, "Error in thread unlocking");
+
 	free(iphdr);
 	free(ip_addr);
 }
 
-// void EnodeB::set_tun_data(bool &data_invalid) {
-// 	string ue_ip_str;
+void EnodeB::send_sgw(){
 
-// 	ue_ip_str.assign(ue_ip);
-// 	if (g_tun_table.find(ue_ip_str) != g_tun_table.end()) {
-// 		tun_data = g_tun_table[ue_ip_str];
-// 		data_invalid = false;
-// 	}
-// 	else {
-// 		cout << "Invalid data received!" << endl;
-// 		data_invalid = true;
-// 	}
-// 	// cout << "Details fetched are: " << "UE IP - " << ue_ip_str << " SGW - port " << tun_data.sgw_port << " SGW addr " << tun_data.sgw_addr << endl;
-// }
+	type = 2;
+	subtype = 1;
 
-// void EnodeB::make_data() {
+	to_sgw.bind_client();
+	to_sgw.fill_server_details(g_ran_data[ue_num].sgw_port, g_ran_data[ue_num].sgw_addr.c_str());
+	to_sgw.pkt.add_metadata(type, subtype, ue_num);
+	to_sgw.pkt.add_gtpu_hdr(g_ran_data[ue_num].sgw_uteid);
+	to_sgw.pkt.add_data(pkt.data, pkt.data_len);
+	to_sgw.write_data();
+	to_sgw.close_client();
+}
 
-// 	pkt.fill_gtpu_hdr(tun_data.sgw_uteid);
-// 	pkt.add_gtpu_hdr();
-// }
+void EnodeB::recv_sgw(){
 
-// void EnodeB::send_data() {
+	pkt.clear_data();
+	status = recvfrom(enodeb_server.server_socket, pkt.data, BUF_SIZE, 0, (sockaddr*)&client_sock_addr, &g_addr_len);
+	report_error(status);
+	pkt.data_len = status;
+	pkt.curr_pos = 0;
+}
 
-// 	to_sgw[num].pkt.clear_data();
-// 	to_sgw[num].pkt.fill_data(0, pkt.data_len, pkt.data);
-// 	to_sgw[num].pkt.make_data_packet();
-// 	to_sgw[num].write_data();
-// }
+void EnodeB::rem_headers(){
+	Packet temp;
+	int len;
 
-// void EnodeB::recv_data(int &sgw_num) {
-
-// 	to_sgw[sgw_num].read_data();
-// 	pkt.clear_data();	
-// 	pkt.fill_data(0, to_sgw[sgw_num].pkt.data_len, to_sgw[sgw_num].pkt.data);
-// 	pkt.rem_gtpu_hdr();
-// }
-
-// void EnodeB::fill_tun_table(string &ue_ip_arg, TunData &tun_data_arg){
-
-// 	g_tun_table[ue_ip_arg] = tun_data_arg;
-// }
-
-// void EnodeB::erase_tun_table(string &ue_ip_arg){
-
-// 	// g_tun_table.erase(ue_ip_arg); /* This is to make the leftover data traffic to reach its intended destination  */
-// }
+	pkt.copy_metadata(type, subtype, ue_num);
+	pkt.copy_gtpu_hdr();
+	
+	len = (pkt.data_len - pkt.curr_pos);
+	temp.clear_data();
+	pkt.copy_data(temp.data, len);
+	temp.data_len = len;
+	temp.curr_pos = 0;
+	temp.copy_topkt(pkt);
+}
 
 EnodeB::~EnodeB() {
 

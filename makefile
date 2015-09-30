@@ -9,8 +9,8 @@ all:	ran mme hss sgw pgw
 
 G++ = g++ -std=c++0x -std=gnu++0x -ggdb
 
-RAN_H	= utils.h packet.h udp_client.h ran_data.h ue.h enodeb.h
-RAN_CPP = utils.cpp packet.cpp udp_client.cpp ran_data.cpp ue.cpp enodeb.cpp
+RAN_H	= utils.h packet.h udp_server.h udp_client.h ran_data.h ue.h enodeb.h
+RAN_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp ran_data.cpp ue.cpp enodeb.cpp
 
 MME_H = utils.h packet.h udp_server.h udp_client.h mme_data.h mme.h
 MME_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp mme_data.cpp mme.cpp

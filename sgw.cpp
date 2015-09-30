@@ -112,26 +112,70 @@ void SGW::modify_session_res_to_mme(){
 
 	status = sendto(g_sgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
 	report_error(status);
+
+	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;	
 }
 
 void SGW::delete_session_req_to_pgw(){
 
+	type = 3;
+	subtype = 1;
 
+	to_pgw.bind_client();
+	to_pgw.fill_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
+	to_pgw.pkt.add_metadata(type, subtype, ue_num);
+	to_pgw.pkt.add_gtpc_hdr(g_sgw_data[ue_num].pgw_cteid);
+	to_pgw.write_data();
 }
 
 void SGW::delete_session_res_from_pgw(){
+	char *res = allocate_str_mem(BUF_SIZE);
+	int len;
 
+	to_pgw.read_data();
+	to_pgw.close_client();
+	to_pgw.pkt.copy_metadata(type, subtype, ue_num);
+	to_pgw.pkt.copy_gtpc_hdr();
+	len = (to_pgw.pkt.data_len - to_pgw.pkt.curr_pos);
+	to_pgw.pkt.copy_data(res, len);
 
+	reply.assign(res);
+	cout << "This is the delete session reply - " << reply << " , for UE - " << ue_num << endl;
+	if(reply == "OK"){
+		success = 1;
+		cout << "Delete session request has been successful at SGW for UE - " << ue_num << endl;
+	}
+	else{
+		success = 0;
+		cout << "Delete session request has not been successful at SGW for UE - " << ue_num << endl;
+	}
+
+	free(res);
 }
 
 void SGW::delete_session_res_to_mme(){
 
+	type = 3;
+	subtype = 1;
 
+	if(success == 1){
+		reply = "OK";
+	}
+	else{
+		reply = "FAILURE";
+	}
+
+	pkt.add_metadata(type, subtype, ue_num);
+	pkt.add_gtpc_hdr(g_sgw_data[ue_num].mme_cteid);
+	pkt.add_data(reply);
+
+	status = sendto(g_sgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
+	report_error(status);	
 }
 
 void SGW::delete_session_data(){
 
-
+	g_sgw_data[ue_num].valid = false;
 }
 
 SGW::~SGW() {

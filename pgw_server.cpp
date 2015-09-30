@@ -79,7 +79,9 @@ void detach_process(PGW &pgw){
 void delete_session(PGW &pgw){
 
 	pgw.delete_session_res_to_sgw();
-	pgw.delete_session_data();
+	if(pgw.success == 1){
+		pgw.delete_session_data();
+	}
 }
 
 // void handle_udata(Server &pgw_server) {

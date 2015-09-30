@@ -162,14 +162,6 @@ void Packet::copy_metadata(int &type, int &subtype, int &ue_num){
 	copy_data(ue_num);
 }
 
-void Packet::clear_data() {
-	int len = BUF_SIZE;
-	
-	memset(data, 0, len * sizeof (uint8_t));	
-	data_len = 0;
-	curr_pos = 0;
-}
-
 void Packet::copy_pkts(Packet &dst, Packet &src) {
 
 	dst.clear_data();
@@ -186,6 +178,14 @@ void Packet::copy_topkt(Packet &dst) {
 
 	dst.clear_data();
 	dst.add_data(data, data_len);
+}
+
+void Packet::clear_data() {
+	int len = BUF_SIZE;
+	
+	memset(data, 0, len * sizeof (uint8_t));	
+	data_len = 0;
+	curr_pos = 0;
 }
 
 Packet::~Packet() {

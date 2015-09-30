@@ -28,6 +28,9 @@ struct RANData{
 
 extern struct RANData *g_ran_data;
 
+extern unordered_map<string, int> g_ue_maptable; // Data race cannot occur because of usage of Mutex lock
+extern pthread_mutex_t g_lock; // To lock g_ue_maptable
+
 void setup_ran_data();
 void free_ran_data();
 

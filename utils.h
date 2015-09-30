@@ -54,6 +54,7 @@ using namespace std;
 
 extern int g_reuse;
 extern int g_freeport;
+extern int g_enodeb_port;
 extern int g_mme_port;
 extern int g_hss_port;
 extern int g_sgw1_port;
@@ -63,6 +64,8 @@ extern int g_pgw_port;
 extern int g_public_sink_port;
 extern int g_private_sink_port;
 extern int g_pgw_server_for_sink_port;
+
+extern string g_enodeb_addr;
 extern string g_mme_addr;
 extern string g_hss_addr;
 extern string g_sgw1_addr;

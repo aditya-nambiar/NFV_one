@@ -60,16 +60,30 @@ void PGW::create_session_res_to_sgw(){
 
 	status = sendto(g_pgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
 	report_error(status);		
+
+	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;
 }
 
 void PGW::delete_session_res_to_sgw(){
 
+	success = 1;
 
+	type = 3;
+	subtype = 1;
+	reply = "OK";
+
+	cout << "Delete session request has been successful at PGW for UE - " << ue_num << endl;	
+	pkt.add_metadata(type, subtype, ue_num);
+	pkt.add_gtpc_hdr(g_pgw_data[ue_num].sgw_cteid);
+	pkt.add_data(reply);
+
+	status = sendto(g_pgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
+	report_error(status);		
 }
 
 void PGW::delete_session_data(){
 
-
+	g_pgw_data[ue_num].valid = false;
 }
 
 PGW::~PGW() {

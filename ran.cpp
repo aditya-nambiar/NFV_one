@@ -14,42 +14,44 @@ void setup_tun() {
 }
 
 void* monitor_traffic(void *arg) {
-	// fd_set read_set;
-	// int max_fd;
-	// int size;
-	// int i;
-	// int status;
-	// bool data_invalid;
+	fd_set read_set;
+	int max_fd;
+	int status;
 
-	// g_enodeb.attach_to_tun();
-	// while (1) {
-	// 	FD_ZERO(&read_set);
-	// 	FD_SET(g_enodeb.tun_fd, &read_set); 
-	// 	max_fd = g_enodeb.tun_fd;
-	// 	size = g_enodeb.pos;
-	// 	for (i = 0; i < size; i++) {
-	// 		FD_SET(g_enodeb.to_sgw[i].ue_socket, &read_set); 
-	// 		max_fd = max(max_fd, g_enodeb.to_sgw[i].ue_socket);
-	// 	}
-	// 	status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-	// 	report_error(status, "Select-process failure\tTry again");		
-	// 	if (FD_ISSET(g_enodeb.tun_fd, &read_set)) {
-	// 		g_enodeb.read_tun();
-	// 		g_enodeb.set_ue_ip();
-	// 		g_enodeb.set_tun_data(data_invalid);
-	// 		if (data_invalid)
-	// 			continue;
-	// 		g_enodeb.set_sgw_num();
-	// 		g_enodeb.make_data();
-	// 		g_enodeb.send_data();
-	// 	}
-	// 	for (i = 0; i < size; i++) {
-	// 		if (FD_ISSET(g_enodeb.to_sgw[i].ue_socket, &read_set)) {
-	// 			g_enodeb.recv_data(i);
-	// 			g_enodeb.write_tun();
-	// 		}
-	// 	}
-	// }
+	g_enodeb.attach_to_tun();
+	g_enodeb.startup_enodeb_server();
+	max_fd = max(g_enodeb.tun_fd, g_enodeb.enodeb_server.server_socket);
+
+	while (1) {
+		FD_ZERO(&read_set);
+		FD_SET(g_enodeb.tun_fd, &read_set); 
+		FD_SET(g_enodeb.enodeb_server.server_socket, &read_set); 
+
+		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+		report_error(status, "Select-process failure\tTry again");		
+
+		if (FD_ISSET(g_enodeb.tun_fd, &read_set)) {
+			uplink_data_transfer();
+		}
+		else if (FD_ISSET(g_enodeb.enodeb_server.server_socket, &read_set)) {
+			downlink_data_transfer();
+		}
+	}
+	return NULL;
+}
+
+void uplink_data_transfer(){
+
+	g_enodeb.read_tun();
+	g_enodeb.set_ue_num();
+	g_enodeb.send_sgw();
+}
+
+void downlink_data_transfer(){
+
+	g_enodeb.recv_sgw();
+	g_enodeb.rem_headers();
+	g_enodeb.write_tun();
 }
 
 void* generate_traffic(void *arg) {
@@ -60,15 +62,15 @@ void* generate_traffic(void *arg) {
 	time_exceeded = false;
 	UE ue(ue_num);
 	ue.fill_mme_details();
-	ue.start_mme_client();
+	ue.startup_mme_client();
 	while (1) {
 		authenticate(ue);
 		if(!ue.success)
 			continue;
 		setup_tunnel(ue);
-		send_traffic();
+		send_traffic(ue);
 		detach(ue);
-		// sleep(1);
+		sleep(1);
 		time_check(g_start_time, g_req_duration, time_exceeded);
 		if (time_exceeded) {
 			break;
@@ -91,19 +93,29 @@ void setup_tunnel(UE &ue){
 	set_tun_data(ue);
 	ue.send_tun_data();
 	ue.recv_tun_data();
+	ue.add_map_entry();
 }
 
 void set_tun_data(UE &ue){
 
-	g_ran_data[ue.num].enodeb_uteid = g_enodeb.generate_uteid(ue.num);
+	g_ran_data[ue.ue_num].enodeb_uteid = g_enodeb.generate_uteid(ue.ue_num);
 }
 
-void send_traffic() {
+void send_traffic(UE &ue) {
 
+	ue.turn_up_interface();
+	ue.setup_sink();
+	ue.send_iperf3_traffic();
+	ue.turn_down_interface();
 }
 
 void detach(UE &ue) {
 
+	ue.send_detach_req();
+	ue.recv_detach_res();
+	if(ue.success == 1){
+		ue.delete_session_data();
+	}
 }
 
 void startup_ran(char *argv[], vector<int> &ue_num, vector<pthread_t> &tid) {
