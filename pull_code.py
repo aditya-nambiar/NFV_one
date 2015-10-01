@@ -6,7 +6,7 @@ time = datetime.now().strftime("%B %d %H:%M hours")
 status = "git status"
 add = 'git add .'
 commit = "git commit -a -m " + "\"" +  time + "\""
-pull = "git pull -u code master"
+pull = "git pull -u code master < passwd.txt"
 os.system(status)
 proceed = raw_input('Proceed? (y/n): ')
 if (proceed == 'y'):
