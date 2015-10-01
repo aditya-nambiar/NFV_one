@@ -69,18 +69,18 @@ void data_transfer(SGW &sgw){
 
 void uplink_data_transfer(SGW &sgw){
 
-	if(g_sgw_data[sgw.ue_num].valid == true){
+	// if(g_sgw_data[sgw.ue_num].valid == true){
 		sgw.make_uplink_data();
 		sgw.send_pgw();
-	}
+	// }
 }
 
 void downlink_data_transfer(SGW &sgw){
 
-	if(g_sgw_data[sgw.ue_num].valid == true){
+	// if(g_sgw_data[sgw.ue_num].valid == true){
 		sgw.make_downlink_data();
 		sgw.send_enodeb();
-	}
+	// }
 }
 
 void detach_process(SGW &sgw){

@@ -48,20 +48,20 @@ void uplink_data_transfer(){
 
 	g_enodeb.read_tun();
 	g_enodeb.set_ue_num();
-	if(g_ran_data[g_enodeb.ue_num].valid == true){
+	// if(g_ran_data[g_enodeb.ue_num].valid == true){
 		g_enodeb.make_uplink_data();
 		g_enodeb.send_sgw();
-	}
+	// }
 }
 
 void downlink_data_transfer(){
 
 	g_enodeb.recv_sgw();
 	g_enodeb.set_metadata();
-	if(g_ran_data[g_enodeb.ue_num].valid == true){
+	// if(g_ran_data[g_enodeb.ue_num].valid == true){
 		g_enodeb.make_downlink_data();
 		g_enodeb.write_tun();		
-	}
+	// }
 }
 
 void* generate_traffic(void *arg) {
@@ -79,7 +79,7 @@ void* generate_traffic(void *arg) {
 			continue;
 		setup_tunnel(ue);
 		send_traffic(ue);
-		sleep(1);
+		// sleep(1);
 		detach(ue);
 		sleep(1);
 		time_check(g_start_time, g_req_duration, time_exceeded);

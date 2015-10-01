@@ -13,10 +13,10 @@ void downlink_data_transfer(PGWDlink &pgw_dlink){
 
 	pgw_dlink.read_data();
 	pgw_dlink.set_ue_num();
-	if(g_pgw_data[pgw_dlink.ue_num].valid == true){
+	// if(g_pgw_data[pgw_dlink.ue_num].valid == true){
 		pgw_dlink.make_downlink_data();
 		pgw_dlink.send_sgw();			
-	}
+	// }
 }
 
 void* process_traffic(void *arg) {
@@ -74,10 +74,10 @@ void data_transfer(PGW &pgw){
 
 void uplink_data_transfer(PGW &pgw){
 
-	if(g_pgw_data[pgw.ue_num].valid == true){
+	// if(g_pgw_data[pgw.ue_num].valid == true){
 		pgw.make_uplink_data();
 		pgw.send_public_sink();
-	}	
+	// }	
 }
 
 void detach_process(PGW &pgw){

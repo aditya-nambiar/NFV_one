@@ -174,7 +174,7 @@ void UE::turn_down_interface(){
 	cmd = "sudo ifconfig " + interface_name + " down";
 	cout << cmd << endl;
 
-	system(cmd.c_str());
+	// system(cmd.c_str());
 	cout << "Interface turned down for UE - " << ue_num << endl;	
 }
 
