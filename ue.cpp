@@ -155,7 +155,7 @@ void UE::send_iperf3_traffic(){
 	mtu = " -M 500";
 	dur = " -t 1";
 
-	cmd = "iperf3 -B " + g_ran_data[ue_num].ue_ip + " -c" + sink_addr + " -p" + to_string(sink_port) + rate + mtu + dur;
+	cmd = "iperf3 -B " + g_ran_data[ue_num].ue_ip + " -c " + sink_addr + " -p " + to_string(sink_port) + rate + mtu + dur;
 	cout << cmd << endl;
 	
 	system(cmd.c_str());
