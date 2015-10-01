@@ -3,36 +3,36 @@
 
 #include "utils.h"
 #include "packet.h"
-#include "server.h"
-#include "client.h"
+#include "udp_server.h"
+#include "udp_client.h"
 
 struct SinkMonitor {
-	static Client to_pgw;
-	static int tun_fd;
-	static const char *tun_name;
-	Server for_pgw;
-	int count;
+	UDPClient to_pgw_dlink;
+
+	struct sockaddr_in client_sock_addr;
 	Packet pkt;
 
+	int status;
+	bool success;
+
+	int tun_fd;
+	string tun_name;
+
 	SinkMonitor();
-	SinkMonitor(const SinkMonitor&);
-	friend void swap(SinkMonitor&, SinkMonitor&);
-	SinkMonitor& operator=(SinkMonitor);
-	SinkMonitor(SinkMonitor&&);
-	static void attach_to_tun();
-	void read_tun();
+	
+	void attach_to_tun();
+	
+	void read_pgw();
+	void make_uplink_data();
 	void write_tun();
-	static void configure_topgw();
-	void listen_accept_pgw(int);
-	void set_global_variables();
-	void copy_to_topgwpkt();
-	void copy_to_pkt(Packet&);
+
+	void read_tun();
+	void make_downlink_data();
+	void send_pgw_dlink();
+
 	~SinkMonitor();
 };
 
-extern Client to_pgw;
-extern int tun_fd;
-
-void* start_monitor(void*);
+extern UDPServer g_public_sink_server;
 
 #endif //SINK_MONITOR_H

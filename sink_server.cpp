@@ -1,13 +1,19 @@
 #include "sink_server.h"
 
+SinkMonitor g_sink_monitor;
+
 int g_total_connections;
+vector<int> g_conn_num;
+pthread_t g_mon_tid;
+vector<pthread_t> g_tid;
 
 void setup_interface() {
-	string arg;
+	string cmd;
 
-	arg = "sudo ifconfig eth0:0 192.168.100.2/16";
-	cout << arg << endl;
-	system(arg.c_str());
+	cmd = "sudo ifconfig eth0:0 192.168.100.2/16";
+	cout << cmd << endl;
+
+	system(cmd.c_str());
 	cout << "Interface successfullly created for Sink" << endl;
 }
 
@@ -20,56 +26,88 @@ void setup_tun() {
 }
 
 void* monitor_traffic(void *arg) {
-	SinkMonitor sink_monitor;
+	fd_set read_set;
+	int max_fd;
+	int status;
 
-	SinkMonitor::attach_to_tun();
-	SinkMonitor::configure_topgw();
-	sink_monitor.listen_accept_pgw(g_total_connections);
+	g_sink_monitor.attach_to_tun();
+	max_fd = max(g_sink_monitor.tun_fd, g_public_sink_server.server_socket);
+
+	while (1) {
+		FD_ZERO(&read_set);
+		FD_SET(g_sink_monitor.tun_fd, &read_set); 
+		FD_SET(g_public_sink_server.server_socket, &read_set); 
+
+		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+		report_error(status, "Select-process failure\tTry again");		
+
+		if (FD_ISSET(g_public_sink_server.server_socket, &read_set)) {
+			uplink_data_transfer();
+		}
+		else if (FD_ISSET(g_sink_monitor.tun_fd, &read_set)) {
+			downlink_data_transfer();
+		}
+	}
+	return NULL;
 }
 
-void* process_traffic(void *arg) {
-	int tnum;
-	string command;
-	string addr;
-	string mtu;
+void uplink_data_transfer(){
+
+	g_sink_monitor.read_pgw();
+	g_sink_monitor.make_uplink_data();
+	g_sink_monitor.write_tun();
+}
+
+void downlink_data_transfer(){
+
+	g_sink_monitor.read_tun();
+	g_sink_monitor.make_downlink_data();
+	g_sink_monitor.send_pgw_dlink();
+}
+
+void* server_iperf3(void *arg) {
+	string cmd;
+	int conn_num;
 	int port;
 
-	tnum = *((int*)arg);
-	port = (tnum + 55000);
-	addr.assign(g_private_sink_addr);
-	mtu = " -M 1000";
-	command = "iperf3 -s -B " + addr + " -p " + to_string(port);
-	cout << command << endl;
-	system(command.c_str());
+	conn_num = *((int*)arg);
+	port = (conn_num + 55000);
+
+	cmd = "iperf3 -s -B " + g_private_sink_addr + " -p " + to_string(port);
+	cout << cmd << endl;
+
+	system(cmd.c_str());
 }
 
-void startup_sink(char *argv[], vector<int> &tnum, vector<pthread_t> &tid) {
+void startup_sink(char *argv[]) {
 
 	g_total_connections = atoi(argv[1]);
-	tnum.resize(g_total_connections);
-	tid.resize(g_total_connections);
+	g_conn_num.resize(g_total_connections);
+	g_tid.resize(g_total_connections);
+	g_public_sink_server.bind_server(g_public_sink_port, g_public_sink_addr.c_str());
+	g_public_sink_server.print_status("PUBLIC SINK");
 }
 
 int main(int argc, char *argv[]) {
-	pthread_t mon_tid;
-	vector<int> tnum;
-	vector<pthread_t> tid;
 	int status;
 	int i;
 
 	check_server_usage(argc, argv);
-	startup_sink(argv, tnum, tid);
+	startup_sink(argv);
 	setup_interface();
 	setup_tun();
-	status = pthread_create(&mon_tid, NULL, monitor_traffic, NULL);
+
+	status = pthread_create(&g_mon_tid, NULL, monitor_traffic, NULL);
 	report_error(status);	
+
 	for (i = 0; i < g_total_connections; i++) {
-		tnum[i] = i;
-		status = pthread_create(&tid[i], NULL, process_traffic, &tnum[i]);
+		g_conn_num[i] = i;
+		status = pthread_create(&g_tid[i], NULL, server_iperf3, &g_conn_num[i]);
 		report_error(status);	
 	}
 	for (i = 0; i < g_total_connections; i++) {
-		pthread_join(tid[i], NULL);
+		pthread_join(g_tid[i], NULL);
 	}
+
 	return 0;
 }

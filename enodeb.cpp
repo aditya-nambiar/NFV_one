@@ -1,5 +1,7 @@
 #include "enodeb.h"
 
+UDPServer g_enodeb_server;
+
 EnodeB::EnodeB() {
 	
 }
@@ -7,11 +9,6 @@ EnodeB::EnodeB() {
 uint16_t EnodeB::generate_uteid(int ue_num) {
 	
 	return ue_num;
-}
-
-void EnodeB::startup_enodeb_server(){
-
-	enodeb_server.bind_server(g_enodeb_port, g_enodeb_addr.c_str());
 }
 
 void EnodeB::attach_to_tun() {	
@@ -90,7 +87,7 @@ void EnodeB::send_sgw(){
 void EnodeB::recv_sgw(){
 
 	pkt.clear_data();
-	status = recvfrom(enodeb_server.server_socket, pkt.data, BUF_SIZE, 0, (sockaddr*)&client_sock_addr, &g_addr_len);
+	status = recvfrom(g_enodeb_server.server_socket, pkt.data, BUF_SIZE, 0, (sockaddr*)&client_sock_addr, &g_addr_len);
 	report_error(status);
 	pkt.data_len = status;
 	pkt.curr_pos = 0;

@@ -8,7 +8,6 @@
 #include "udp_client.h"
 
 struct EnodeB {
-	UDPServer enodeb_server;
 	UDPClient to_sgw;
 
 	struct sockaddr_in client_sock_addr;
@@ -30,7 +29,6 @@ struct EnodeB {
 
 	uint16_t generate_uteid(int);
 
-	void startup_enodeb_server();
 	void attach_to_tun();
 
 	void read_tun();
@@ -45,5 +43,7 @@ struct EnodeB {
 
 	~EnodeB();
 };
+
+extern UDPServer g_enodeb_server;
 
 #endif //ENODEB_H

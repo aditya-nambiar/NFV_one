@@ -24,13 +24,12 @@ void* monitor_traffic(void *arg) {
 	int status;
 
 	g_enodeb.attach_to_tun();
-	g_enodeb.startup_enodeb_server();
-	max_fd = max(g_enodeb.tun_fd, g_enodeb.enodeb_server.server_socket);
+	max_fd = max(g_enodeb.tun_fd, g_enodeb_server.server_socket);
 
 	while (1) {
 		FD_ZERO(&read_set);
 		FD_SET(g_enodeb.tun_fd, &read_set); 
-		FD_SET(g_enodeb.enodeb_server.server_socket, &read_set); 
+		FD_SET(g_enodeb_server.server_socket, &read_set); 
 
 		status = select(max_fd + 1, &read_set, NULL, NULL, NULL);
 		report_error(status, "Select-process failure\tTry again");		
@@ -38,7 +37,7 @@ void* monitor_traffic(void *arg) {
 		if (FD_ISSET(g_enodeb.tun_fd, &read_set)) {
 			uplink_data_transfer();
 		}
-		else if (FD_ISSET(g_enodeb.enodeb_server.server_socket, &read_set)) {
+		else if (FD_ISSET(g_enodeb_server.server_socket, &read_set)) {
 			downlink_data_transfer();
 		}
 	}
@@ -136,6 +135,8 @@ void startup_ran(char *argv[]) {
 	g_req_duration = atof(argv[2]);
 	g_ue_num.resize(g_total_connections);
 	g_tid.resize(g_total_connections);
+	g_enodeb_server.bind_server(g_enodeb_port, g_enodeb_addr.c_str());
+	g_enodeb_server.print_status("ENODEB");
 }
 
 int main(int argc, char *argv[]) {

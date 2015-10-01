@@ -1,6 +1,6 @@
 #---------------Final Target----------------#
 
-all:	ran mme hss sgw pgw
+all:	ran mme hss sgw pgw sink
 
 #-------------------------------------------#
 
@@ -24,8 +24,8 @@ SGW_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp sgw_data.cpp sgw.cp
 PGW_H = utils.h packet.h udp_server.h udp_client.h pgw_data.h pgw_dlink.h pgw.h
 PGW_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp pgw_data.cpp pgw_dlink.cpp pgw.cpp
 
-# SINK_H = utils.h packet.h thread_pool.h server.h client.h sink_monitor.h
-# SINK_CPP = utils.cpp packet.cpp thread_pool.cpp server.cpp client.cpp sink_monitor.cpp
+SINK_H = utils.h packet.h udp_server.h udp_client.h sink_monitor.h
+SINK_CPP = utils.cpp packet.cpp udp_server.cpp udp_client.cpp sink_monitor.cpp
 
 TAGS = -w -o
 
@@ -53,8 +53,8 @@ PGW_P = pgw_server.h pgw_server.cpp $(PGW_H) $(PGW_CPP)
 PGW_R = $(G++) pgw_server.cpp $(TAGS) pgw $(PGW_CPP) -lpthread 
 
 
-# SINK_P = sink_server.h sink_server.cpp $(SINK_H) $(SINK_CPP)
-# SINK_R = $(G++) sink_server.cpp $(TAGS) sink $(SINK_CPP) -lpthread
+SINK_P = sink_server.h sink_server.cpp $(SINK_H) $(SINK_CPP)
+SINK_R = $(G++) sink_server.cpp $(TAGS) sink $(SINK_CPP) -lpthread
 
 #-------------------------------------------#
 
@@ -76,8 +76,8 @@ sgw:	$(SGW_P)
 pgw:	$(PGW_P)
 	$(PGW_R)
 
-# sink:	$(SINK_P)
-# 	$(SINK_R)
+sink:	$(SINK_P)
+	$(SINK_R)
 
 clean:
 	rm -f ran mme hss sgw pgw sink *~
