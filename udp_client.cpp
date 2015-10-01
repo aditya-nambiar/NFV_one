@@ -49,7 +49,21 @@ void UDPClient::read_data() {
 
 void UDPClient::write_data() {
 	
-	status = sendto(client_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&server_sock_addr, g_addr_len);
+	while(1){
+		status = sendto(client_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&server_sock_addr, g_addr_len);
+		if(errno == EPERM){
+			continue;
+		}
+		else{
+			break;
+		}
+	}
+	if(status<0){
+		cout << client_socket << endl;
+		cout << pkt.data_len << endl;
+		cout<<server_port<<endl;
+		cout<<server_addr<<endl;
+	}
 	report_error(status, "UDPClient side: Error in writing data");
 }
 
