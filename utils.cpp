@@ -18,7 +18,7 @@ string g_sgw1_addr = "10.14.13.29";
 string g_pgw_addr = "10.14.13.29";
 string g_pgw_dlink_addr = "10.14.13.29";
 string g_public_sink_addr = "10.129.26.169";
-string g_private_sink_addr = "10.129.26.169";
+string g_private_sink_addr = "192.168.100.2";
 
 // string g_enodeb_addr = "192.168.1.70";
 // string g_mme_addr = "192.168.1.72";
