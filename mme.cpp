@@ -156,6 +156,8 @@ void MME::modify_session_res_from_sgw(){
 	g_mme_data[ue_num].ue_ip.assign(ip_addr);
 	g_mme_data[ue_num].valid = true;
 
+	cout << "Received IP address is **" << ip_addr << "** for UE - " << ue_num << endl;
+
 	free(ip_addr);
 }
 

@@ -75,6 +75,8 @@ void SGW::create_session_res_from_pgw(){
 
 	g_sgw_data[ue_num].ue_ip.assign(ip_addr);
 
+	cout << "Received IP address is **" << ip_addr << "** for UE - " << ue_num << endl;
+
 	free(ip_addr);
 }
 
