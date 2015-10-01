@@ -103,6 +103,7 @@ void setup_tunnel(UE &ue){
 
 	set_tun_data(ue);
 	ue.send_tun_data();
+	ue.set_sgw_details();
 	ue.recv_tun_data();
 	ue.add_map_entry();
 }

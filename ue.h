@@ -40,6 +40,7 @@ struct UE {
 	void recv_autn_check();
 
 	void send_tun_data();
+	void set_sgw_details();
 	void recv_tun_data();
 	void add_map_entry();
 
