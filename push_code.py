@@ -6,7 +6,7 @@ time = datetime.now().strftime("%B %d %H:%M hours")
 status = "git status"
 add = 'git add .'
 commit = "git commit -a -m " + "\"" +  time + "\""
-push = "git push -u code master < passwd.txt"
+push = "git push -u code master"
 os.system("make")
 os.system(status)
 proceed = raw_input('Proceed? (y/a/n): ')
