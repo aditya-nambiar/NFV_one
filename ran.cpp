@@ -78,7 +78,7 @@ void* generate_traffic(void *arg) {
 		if(!ue.success)
 			continue;
 		setup_tunnel(ue);
-		send_traffic(ue);
+		// send_traffic(ue);
 		// sleep(1);
 		detach(ue);
 		sleep(1);
