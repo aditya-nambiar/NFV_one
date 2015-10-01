@@ -65,6 +65,8 @@ void PGW::create_session_res_to_sgw(){
 	pkt.add_data(g_pgw_data[ue_num].pgw_uteid);
 	pkt.add_data(g_pgw_data[ue_num].ue_ip);
 
+	cout << "Assigned IP address is **" << g_pgw_data[ue_num].ue_ip << "** for UE - " << ue_num << endl;
+
 	status = sendto(g_pgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
 	report_error(status);		
 
