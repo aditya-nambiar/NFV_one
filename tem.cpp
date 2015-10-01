@@ -102,7 +102,7 @@ void input_ue_data() {
 	inp_query = "";
 	MySql db;
 	connect_with_db(db);
-	for (i = 101; i <= 1000; i++) {
+	for (i = 40970; i <= 100000; i++) {
 		inp_query = "";
 		inp_query.append("insert into ue_data values(");	
 		inp_query.append(to_char_array(i));

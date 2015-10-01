@@ -79,6 +79,7 @@ void* generate_traffic(void *arg) {
 			continue;
 		setup_tunnel(ue);
 		send_traffic(ue);
+		sleep(1);
 		detach(ue);
 		sleep(1);
 		time_check(g_start_time, g_req_duration, time_exceeded);
