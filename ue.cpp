@@ -94,6 +94,12 @@ void UE::send_tun_data(){
 	to_mme.write_data();
 }
 
+void UE::set_sgw_details(){
+
+	g_ran_data[ue_num].sgw_port = g_sgw1_port;
+	g_ran_data[ue_num].sgw_addr = g_sgw1_addr;
+}
+
 void UE::recv_tun_data(){
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 	int len = INET_ADDRSTRLEN;
