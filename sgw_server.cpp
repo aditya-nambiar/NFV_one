@@ -44,6 +44,9 @@ void create_session(SGW &sgw){
 	sgw.set_pgw_details(sgw.ue_num);
 	sgw.create_session_req_to_pgw();
 	sgw.create_session_res_from_pgw();
+	if(!sgw.success){
+		return;
+	}
 	sgw.create_session_res_to_mme();
 }
 

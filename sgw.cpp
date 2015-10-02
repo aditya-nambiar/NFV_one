@@ -65,8 +65,11 @@ void SGW::create_session_res_from_pgw(){
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 	int len = INET_ADDRSTRLEN;
 
-	to_pgw.read_data();
+	to_pgw.read_data(success);
 	to_pgw.close_client();
+	if(!success){
+		return;
+	}
 	to_pgw.pkt.copy_metadata(type, subtype, ue_num);
 	to_pgw.pkt.copy_gtpc_hdr();
 	to_pgw.pkt.copy_data(g_sgw_data[ue_num].pgw_cteid);
@@ -89,8 +92,7 @@ void SGW::create_session_res_to_mme(){
 	pkt.add_gtpc_hdr(g_sgw_data[ue_num].mme_cteid);
 	pkt.add_data(g_sgw_data[ue_num].sgw_cteid);
 
-	status = sendto(g_sgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);	
+	g_sgw_server.write_data(client_sock_addr, pkt);
 }
 
 void SGW::set_enodeb_details(int arg_ue_num){
@@ -117,8 +119,7 @@ void SGW::modify_session_res_to_mme(){
 	pkt.add_data(g_sgw_data[ue_num].sgw_uteid);
 	pkt.add_data(g_sgw_data[ue_num].ue_ip);
 
-	status = sendto(g_sgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);
+	g_sgw_server.write_data(client_sock_addr, pkt);
 
 	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;	
 }
@@ -181,8 +182,11 @@ void SGW::delete_session_res_from_pgw(){
 	char *res = allocate_str_mem(BUF_SIZE);
 	int len;
 
-	to_pgw.read_data();
+	to_pgw.read_data(success);
 	to_pgw.close_client();
+	if(!success){
+		return;
+	}
 	to_pgw.pkt.copy_metadata(type, subtype, ue_num);
 	to_pgw.pkt.copy_gtpc_hdr();
 	len = (to_pgw.pkt.data_len - to_pgw.pkt.curr_pos);
@@ -218,8 +222,7 @@ void SGW::delete_session_res_to_mme(){
 	pkt.add_gtpc_hdr(g_sgw_data[ue_num].mme_cteid);
 	pkt.add_data(reply);
 
-	status = sendto(g_sgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);	
+	g_sgw_server.write_data(client_sock_addr, pkt);
 }
 
 void SGW::delete_session_data(){

@@ -45,8 +45,11 @@ void MME::fetch_ue_data(){
 	to_hss.pkt.add_data(msisdn);
 	to_hss.write_data();
 	cout<<"Waiting to read data for UE - "<<ue_num<<endl;
-	to_hss.read_data();
+	to_hss.read_data(success);
 	to_hss.close_client();
+	if(!success){
+		return; // Added for uniformity
+	}
 }
 
 void MME::store_ue_data(){
@@ -63,8 +66,7 @@ void MME::send_autn_req(){
 	pkt.add_data(autn_num);
 	pkt.add_data(rand_num);
 	
-	status = sendto(g_mme_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);
+	g_mme_server.write_data(client_sock_addr, pkt);
 }
 
 void MME::process_autn(){
@@ -83,8 +85,7 @@ void MME::process_autn(){
 	pkt.add_metadata(type, subtype, ue_num);
 	pkt.add_data(reply);
 	
-	status = sendto(g_mme_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);		
+	g_mme_server.write_data(client_sock_addr, pkt);
 }
 
 void MME::set_sgw_details(int arg_ue_num){
@@ -117,8 +118,11 @@ void MME::create_session_req_to_sgw(){
 
 void MME::create_session_res_from_sgw(){
 
-	to_sgw.read_data();
+	to_sgw.read_data(success);
 	to_sgw.close_client();
+	if(!success){
+		return;
+	}
 	to_sgw.pkt.copy_metadata(type, subtype, ue_num);
 	to_sgw.pkt.copy_gtpc_hdr();
 	to_sgw.pkt.copy_data(g_mme_data[ue_num].sgw_cteid);
@@ -146,8 +150,11 @@ void MME::modify_session_res_from_sgw(){
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 	int len = INET_ADDRSTRLEN;
 
-	to_sgw.read_data();
+	to_sgw.read_data(success);
 	to_sgw.close_client();
+	if(!success){
+		return;
+	}
 	to_sgw.pkt.copy_metadata(type, subtype, ue_num);
 	to_sgw.pkt.copy_gtpc_hdr();
 	to_sgw.pkt.copy_data(g_mme_data[ue_num].sgw_uteid);
@@ -170,8 +177,7 @@ void MME::send_attach_res(){
 	pkt.add_data(g_mme_data[ue_num].sgw_uteid);
 	pkt.add_data(g_mme_data[ue_num].ue_ip);
 	
-	status = sendto(g_mme_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);			
+	g_mme_server.write_data(client_sock_addr, pkt);
 
 	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;
 }
@@ -192,8 +198,11 @@ void MME::delete_session_res_from_sgw(){
 	char *res = allocate_str_mem(BUF_SIZE);
 	int len;
 
-	to_sgw.read_data();
+	to_sgw.read_data(success);
 	to_sgw.close_client();
+	if(!success){
+		return;
+	}
 	to_sgw.pkt.copy_metadata(type, subtype, ue_num);
 	to_sgw.pkt.copy_gtpc_hdr();
 	len = (to_sgw.pkt.data_len - to_sgw.pkt.curr_pos);
@@ -228,8 +237,7 @@ void MME::send_detach_res(){
 	pkt.add_metadata(type, subtype, ue_num);
 	pkt.add_data(reply);
 
-	status = sendto(g_mme_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);			
+	g_mme_server.write_data(client_sock_addr, pkt);
 }	
 
 void MME::delete_session_data(){

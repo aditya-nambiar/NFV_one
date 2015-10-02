@@ -22,7 +22,7 @@ Coding Convention followed:
  	-All data member and function declarations are placed in header files and their definitions are placed in corresponding cpp files
 	-Default indentation and spacing rules are followed in all parts of the source code
  
-Naming: (Followed Google's code convention except in cases of const, functions, enum and class variables)
+Naming:
 
 	Variables 
 		All variable names are in lower case and are separated by underscore if they have more than one word (multiple words can be combined into a single word and name shortening is allowed)
