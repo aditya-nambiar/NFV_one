@@ -191,7 +191,7 @@ void UE::turn_up_interface(){
 
 	interface_name = "eth0:" + to_string(ue_num);
 
-	cmd = "sudo ifconfig " + interface_name + " " + ue_ip + "/16";
+	cmd = "sudo ifconfig " + interface_name + " " + ue_ip + "/8";
 	cout << cmd << endl;
 
 	system(cmd.c_str());

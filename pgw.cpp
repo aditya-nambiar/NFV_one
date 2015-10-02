@@ -167,7 +167,7 @@ void PGW::delete_session_data(){
 		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
-		// g_ue_maptable.erase(key); // Commented this because data validity is checked using valid bit while sending data
+		// g_ue_maptable.erase(key); // Commented to ensure leftover traffic also gets sent
 
 		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
@@ -185,13 +185,24 @@ PGW::~PGW() {
 void generate_ip_table() {
 	string prefix;
 	string ip;
+	int subnet;
+	int host;
 	int i;
 	
 	g_ip_table.resize(MAX_IPS);
-	
-	prefix = "192.168.100.";
+	subnet = 2;
+	host = 3;
+
+	prefix = "192.168.";
 	for (i = 0; i < MAX_IPS; i++) {
-		ip = prefix + to_string(i+3);
+		ip = prefix + to_string(subnet) + "." + to_string(host);
 		g_ip_table[i] = ip;
+		if(host == 254){
+			subnet++;
+			host = 3;
+		}
+		else{
+			host++;
+		}		
 	}
 }

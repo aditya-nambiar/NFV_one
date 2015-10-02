@@ -7,7 +7,7 @@
 #include "udp_client.h"
 #include "pgw_data.h"
 
-#define MAX_IPS 200
+#define MAX_IPS 30000
 
 struct PGW {
 	UDPClient to_public_sink;
