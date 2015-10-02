@@ -28,7 +28,7 @@ struct MMEData{
 	~MMEData();
 };
 
-extern struct MMEData *g_mme_data; // Data race cannot occur because of usage of Mutex lock
+extern struct MMEData *g_mme_data; 
 extern pthread_mutex_t g_arr_lock; // To lock g_ran_data
 
 void setup_mme_data();
