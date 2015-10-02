@@ -170,7 +170,7 @@ void SGW::modify_session_res_to_mme(){
 	pkt.add_data(g_sgw_data[ue_num].ue_ip);
 
 	status = pthread_mutex_unlock(&g_arr_lock);
-	report_error(status, "Error in thread unlocking");	
+	report_error(status, "Error in thread unlocking");
 
 	g_sgw_server.write_data(client_sock_addr, pkt);
 
