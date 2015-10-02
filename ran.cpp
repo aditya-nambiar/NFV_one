@@ -74,18 +74,27 @@ void* generate_traffic(void *arg) {
 	ue.set_mme_details();
 	ue.startup_mme_client();
 	while (1) {
-		authenticate(ue);
-		if(!ue.success)
-			continue;
-		setup_tunnel(ue);
-		// send_traffic(ue);
-		// sleep(1);
-		detach(ue);
-		sleep(1);
 		time_check(g_start_time, g_req_duration, time_exceeded);
 		if (time_exceeded) {
 			break;
 		}
+
+		authenticate(ue);
+		if(!ue.success)
+			continue;
+
+		setup_tunnel(ue);
+		if(!ue.success)
+			continue;
+
+		// send_traffic(ue);
+		// sleep(1);
+		
+		detach(ue);
+		if(!ue.success)
+			continue;
+
+		sleep(1);
 	}
 	return NULL;
 }
@@ -94,9 +103,15 @@ void authenticate(UE &ue) {
 
 	ue.send_attach_req();
 	ue.recv_autn_req();
+	if(!ue.success){
+		return;
+	}
 	ue.set_autn_res();
 	ue.send_autn_res();
 	ue.recv_autn_check();
+	if(!ue.success){
+		return;
+	}
 }
 
 void setup_tunnel(UE &ue){
@@ -105,6 +120,9 @@ void setup_tunnel(UE &ue){
 	ue.send_tun_data();
 	ue.set_sgw_details();
 	ue.recv_tun_data();
+	if(!ue.success){
+		return;
+	}
 	ue.add_map_entry();
 }
 
@@ -127,6 +145,9 @@ void detach(UE &ue) {
 	ue.recv_detach_res();
 	if(ue.success == 1){
 		ue.delete_session_data();
+	}
+	else{
+		return;
 	}
 }
 

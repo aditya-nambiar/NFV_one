@@ -41,6 +41,10 @@ void attach_process(MME &mme){
 void init_autn(MME &mme){
 
 	mme.fetch_ue_data();
+	if(!mme.success){
+		return;
+	}
+
 	mme.store_ue_data();
 	mme.send_autn_req();
 }
@@ -48,12 +52,16 @@ void init_autn(MME &mme){
 void create_session(MME &mme){
 
 	mme.process_autn();
-	if(!mme.success)
+	if(!mme.success){
 		return;
+	}
 	mme.set_sgw_details(mme.ue_num);
 	mme.set_pgw_details(mme.ue_num);
 	mme.create_session_req_to_sgw();
 	mme.create_session_res_from_sgw();
+	if(!mme.success){
+		return; // Added for uniformity
+	}
 }
 
 void modify_session(MME &mme){
@@ -61,6 +69,9 @@ void modify_session(MME &mme){
 	mme.store_enodeb_data();
 	mme.modify_session_req_to_sgw();
 	mme.modify_session_res_from_sgw();
+	if(!mme.success){
+		return;
+	}
 	mme.send_attach_res();
 }
 

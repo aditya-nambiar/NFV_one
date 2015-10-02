@@ -2,6 +2,7 @@
 #define UDP_SERVER_H
 
 #include "utils.h"
+#include "packet.h"
 
 struct UDPServer {
 	int server_socket;
@@ -13,6 +14,7 @@ struct UDPServer {
 
 	UDPServer();
 	void bind_server(int, const char*);
+	void write_data(struct sockaddr_in&, Packet&);
 	void print_status(const char*);
 	~UDPServer();
 };

@@ -74,6 +74,8 @@ extern string g_private_sink_addr;
 
 extern socklen_t g_addr_len;
 
+extern struct timeval g_timeout;
+
 // extern int g_sgw3_port;
 // extern int g_sgw2_port;
 // extern int g_public_sink_port;
@@ -84,26 +86,33 @@ extern socklen_t g_addr_len;
 // extern string g_public_sink_addr;
 // extern string g_private_sink_addr;
 // extern string g_pgw_server_for_sink_addr;
-// extern struct timeval g_timeout;
 // extern int g_fail_count;
 
 void report_error(int);
 void report_error(int, const char*);
+void report_error(int, bool&);
+
 void print(string);
 void print(int);
 void print(string, int);
 void print_message(string);
 void print_message(string, int);
 void print_message(string, unsigned long long);
+
 const char* to_char_array(unsigned long long);
+
 char* allocate_str_mem(int);
 uint8_t* allocate_uint8_mem(int);
 struct ip* allocate_ip_mem(int);
 struct tcphdr* allocate_tcp_mem(int);
+
 void check_server_usage(int, char*[]);
 void check_client_usage(int, char*[]);
+
 void time_check(time_t&, double&, bool&);
+
 void handle_exceptions();
+
 int create_udp_socket();
 
 #endif //UTILS_H

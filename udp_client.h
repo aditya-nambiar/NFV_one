@@ -20,7 +20,7 @@ struct UDPClient {
 	UDPClient();
 	void bind_client();
 	void set_server_details(int, const char*);
-	void read_data();
+	void read_data(bool&);
 	void write_data();	
 	void close_client();
 	~UDPClient();		

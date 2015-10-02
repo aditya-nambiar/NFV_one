@@ -39,7 +39,11 @@ void UE::send_attach_req(){
 void UE::recv_autn_req(){
 
 	cout<<"Waiting to read data_1 : UE - "<<ue_num<<endl;
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	to_mme.pkt.copy_data(autn_num);
 	to_mme.pkt.copy_data(rand_num);
@@ -66,7 +70,11 @@ void UE::recv_autn_check(){
 	int len;
 
 	cout<<"Waiting to read data_2 : UE - "<<ue_num<<endl;
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	len = (to_mme.pkt.data_len - to_mme.pkt.curr_pos);
 	to_mme.pkt.copy_data(res, len);
@@ -104,7 +112,11 @@ void UE::recv_tun_data(){
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 	int len = INET_ADDRSTRLEN;
 
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	to_mme.pkt.copy_data(g_ran_data[ue_num].sgw_uteid);
 	to_mme.pkt.copy_data(ip_addr, len);
@@ -191,7 +203,11 @@ void UE::recv_detach_res(){
 	char *res = allocate_str_mem(BUF_SIZE);
 	int len;
 
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	len = (to_mme.pkt.data_len - to_mme.pkt.curr_pos);
 	to_mme.pkt.copy_data(res, len);
