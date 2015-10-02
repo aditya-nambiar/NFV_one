@@ -135,12 +135,12 @@ void UE::add_map_entry(){
 		string key = g_ran_data[ue_num].ue_ip;
 		int value = g_ran_data[ue_num].ue_num;
 
-		status = pthread_mutex_lock(&g_lock);
+		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
 		g_ue_maptable[key] = value;
 
-		status = pthread_mutex_unlock(&g_lock);
+		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
 	}
 }
@@ -233,12 +233,12 @@ void UE::delete_session_data(){
 	if(g_ran_data[ue_num].valid == false){
 		string key = g_ran_data[ue_num].ue_ip;
 
-		status = pthread_mutex_lock(&g_lock);
+		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
 		// g_ue_maptable.erase(key); // Commented this because data validity is checked using valid bit while sending data
 
-		status = pthread_mutex_unlock(&g_lock);
+		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
 	}
 }

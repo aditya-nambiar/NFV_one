@@ -1,9 +1,10 @@
 #include "ran_data.h"
 
 struct RANData *g_ran_data;
+pthread_mutex_t g_arr_lock = PTHREAD_MUTEX_INITIALIZER;
 
 unordered_map<string, int> g_ue_maptable;
-pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t g_map_lock = PTHREAD_MUTEX_INITIALIZER;
 
 RANData::RANData(){
 
