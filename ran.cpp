@@ -127,8 +127,15 @@ void setup_tunnel(UE &ue){
 }
 
 void set_tun_data(UE &ue){
+	int status;
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
 
 	g_ran_data[ue.ue_num].enodeb_uteid = g_enodeb.generate_uteid(ue.ue_num);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void send_traffic(UE &ue) {

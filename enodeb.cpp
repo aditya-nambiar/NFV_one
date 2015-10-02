@@ -72,14 +72,30 @@ void EnodeB::make_uplink_data(){
 	subtype = 1;
 	
 	to_sgw.pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_sgw.pkt.add_gtpu_hdr(g_ran_data[ue_num].sgw_uteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_sgw.pkt.add_data(pkt.data, pkt.data_len);
 }
 
 void EnodeB::send_sgw(){
 
 	to_sgw.bind_client();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_sgw.set_server_details(g_ran_data[ue_num].sgw_port, g_ran_data[ue_num].sgw_addr.c_str());
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_sgw.write_data();
 	to_sgw.close_client();
 }

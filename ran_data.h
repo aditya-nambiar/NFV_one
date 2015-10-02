@@ -7,10 +7,6 @@ struct RANData{
 	bool valid;
 
 	int ue_num;
-	unsigned long long key;
-	unsigned long long imsi;
-	unsigned long long msisdn;
-	string ue_ip;
 
 	uint16_t enodeb_uteid;
 
@@ -26,10 +22,10 @@ struct RANData{
 	~RANData();
 };
 
-extern struct RANData *g_ran_data; // Data race cannot occur because of usage of Mutex lock
+extern struct RANData *g_ran_data; 
 extern pthread_mutex_t g_arr_lock; // To lock g_ran_data
 
-extern unordered_map<string, int> g_ue_maptable; // Data race cannot occur because of usage of Mutex lock
+extern unordered_map<string, int> g_ue_maptable; 
 extern pthread_mutex_t g_map_lock; // To lock g_ue_maptable
 
 void setup_ran_data();

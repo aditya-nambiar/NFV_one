@@ -21,7 +21,7 @@ void setup_ran_data(){
 
 	g_ran_data = new struct RANData[MAX_CONNS];
 	for(i=0;i<MAX_CONNS;i++)
-		g_ran_data[i].ue_num = i;
+		g_ran_data[i].ue_num = i;	
 }
 
 void free_ran_data(){

@@ -34,20 +34,35 @@ void SGW::set_metadata(){
 
 void SGW::store_create_session_data(){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");	
+
 	pkt.copy_data(g_sgw_data[ue_num].bearer_id);
 	pkt.copy_data(g_sgw_data[ue_num].mme_cteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void SGW::set_pgw_details(int arg_ue_num){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	g_sgw_data[arg_ue_num].pgw_port = g_pgw_port;
 	g_sgw_data[arg_ue_num].pgw_addr = g_pgw_addr;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void SGW::create_session_req_to_pgw(){
 
 	type = 1;
 	subtype = 3;
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
 
 	g_sgw_data[ue_num].sgw_cteid = generate_cteid(ue_num);
 	g_sgw_data[ue_num].sgw_uteid = generate_uteid(ue_num);
@@ -58,6 +73,10 @@ void SGW::create_session_req_to_pgw(){
 	to_pgw.pkt.add_data(g_sgw_data[ue_num].bearer_id);
 	to_pgw.pkt.add_data(g_sgw_data[ue_num].sgw_cteid);
 	to_pgw.pkt.add_data(g_sgw_data[ue_num].sgw_uteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_pgw.write_data();
 }
 
@@ -72,11 +91,18 @@ void SGW::create_session_res_from_pgw(){
 	}
 	to_pgw.pkt.copy_metadata(type, subtype, ue_num);
 	to_pgw.pkt.copy_gtpc_hdr();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_pgw.pkt.copy_data(g_sgw_data[ue_num].pgw_cteid);
 	to_pgw.pkt.copy_data(g_sgw_data[ue_num].pgw_uteid);
 	to_pgw.pkt.copy_data(ip_addr, len);
 
 	g_sgw_data[ue_num].ue_ip.assign(ip_addr);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 
 	cout << "Received IP address is **" << ip_addr << "** for UE - " << ue_num << endl;
 
@@ -89,24 +115,44 @@ void SGW::create_session_res_to_mme(){
 	subtype = 3;
 
 	pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	pkt.add_gtpc_hdr(g_sgw_data[ue_num].mme_cteid);
 	pkt.add_data(g_sgw_data[ue_num].sgw_cteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
 
 	g_sgw_server.write_data(client_sock_addr, pkt);
 }
 
 void SGW::set_enodeb_details(int arg_ue_num){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	g_sgw_data[arg_ue_num].enodeb_port = g_enodeb_port;
 	g_sgw_data[arg_ue_num].enodeb_addr = g_enodeb_addr;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void SGW::store_modify_session_data(){
 
 	pkt.copy_gtpc_hdr();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	pkt.copy_data(g_sgw_data[ue_num].enodeb_uteid);
 
 	g_sgw_data[ue_num].valid = true;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void SGW::modify_session_res_to_mme(){
@@ -115,9 +161,16 @@ void SGW::modify_session_res_to_mme(){
 	subtype = 4;
 
 	pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	pkt.add_gtpc_hdr(g_sgw_data[ue_num].mme_cteid);	
 	pkt.add_data(g_sgw_data[ue_num].sgw_uteid);
 	pkt.add_data(g_sgw_data[ue_num].ue_ip);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 
 	g_sgw_server.write_data(client_sock_addr, pkt);
 
@@ -133,14 +186,30 @@ void SGW::make_uplink_data(){
 	pkt.copy_gtpu_hdr();
 	len = (pkt.data_len - pkt.curr_pos);
 	to_pgw.pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_pgw.pkt.add_gtpu_hdr(g_sgw_data[ue_num].pgw_uteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_pgw.pkt.add_data(pkt.data + pkt.curr_pos, len);
 }
 
 void SGW::send_pgw(){
 
 	to_pgw.bind_client();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_pgw.set_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_pgw.write_data();
 	to_pgw.close_client();
 }
@@ -154,14 +223,30 @@ void SGW::make_downlink_data(){
 	pkt.copy_gtpu_hdr();
 	len = (pkt.data_len - pkt.curr_pos);
 	to_enodeb.pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_enodeb.pkt.add_gtpu_hdr(g_sgw_data[ue_num].enodeb_uteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_enodeb.pkt.add_data(pkt.data + pkt.curr_pos, len);
 }
 
 void SGW::send_enodeb(){
 
 	to_enodeb.bind_client();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_enodeb.set_server_details(g_sgw_data[ue_num].enodeb_port, g_sgw_data[ue_num].enodeb_addr.c_str());
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_enodeb.write_data();
 	to_enodeb.close_client();
 }
@@ -172,9 +257,17 @@ void SGW::delete_session_req_to_pgw(){
 	subtype = 1;
 
 	to_pgw.bind_client();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_pgw.set_server_details(g_sgw_data[ue_num].pgw_port, g_sgw_data[ue_num].pgw_addr.c_str());
 	to_pgw.pkt.add_metadata(type, subtype, ue_num);
 	to_pgw.pkt.add_gtpc_hdr(g_sgw_data[ue_num].pgw_cteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	to_pgw.write_data();
 }
 
@@ -219,7 +312,15 @@ void SGW::delete_session_res_to_mme(){
 	}
 
 	pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	pkt.add_gtpc_hdr(g_sgw_data[ue_num].mme_cteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	pkt.add_data(reply);
 
 	g_sgw_server.write_data(client_sock_addr, pkt);
@@ -227,7 +328,13 @@ void SGW::delete_session_res_to_mme(){
 
 void SGW::delete_session_data(){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	g_sgw_data[ue_num].valid = false;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 SGW::~SGW() {

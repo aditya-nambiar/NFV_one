@@ -1,6 +1,7 @@
 #include "sgw_data.h"
 
 struct SGWData *g_sgw_data;
+pthread_mutex_t g_arr_lock = PTHREAD_MUTEX_INITIALIZER;
 
 SGWData::SGWData(){
 

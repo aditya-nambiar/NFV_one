@@ -11,11 +11,16 @@ struct UE {
 	int type;
 	int subtype;
 	
+	unsigned long long key;
+	unsigned long long imsi;
+	unsigned long long msisdn;
+	string ue_ip;
+
+	UDPClient to_mme;
+
 	unsigned long long autn_num;
 	unsigned long long rand_num;
 	unsigned long long autn_res;
-
-	UDPClient to_mme;
 
 	int sink_port;
 	string sink_addr;

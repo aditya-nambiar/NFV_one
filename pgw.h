@@ -50,7 +50,7 @@ extern vector<pthread_t> g_tid;
 extern pthread_t g_downlink_tid;
 extern int g_tcount;
 
-extern vector<string> g_ip_table;
+extern vector<string> g_ip_table; // No lock needed since only READ accesses are made by concurrent threads
 
 void generate_ip_table();
 
