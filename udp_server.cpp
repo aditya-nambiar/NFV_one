@@ -30,6 +30,7 @@ void UDPServer::write_data(struct sockaddr_in &client_sock_addr, Packet &pkt){
 	while(1){
 		status = sendto(server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
 		if(errno == EPERM){
+			errno = 0;
 			continue;
 		}
 		else{

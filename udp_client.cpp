@@ -57,6 +57,7 @@ void UDPClient::write_data() {
 	while(1){
 		status = sendto(client_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&server_sock_addr, g_addr_len);
 		if(errno == EPERM){
+			errno = 0;
 			continue;
 		}
 		else{

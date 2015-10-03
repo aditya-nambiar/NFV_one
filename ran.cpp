@@ -91,14 +91,14 @@ void* generate_traffic(void *arg) {
 		if(!ue.success)
 			continue;
 
-		send_traffic(ue);
+		// send_traffic(ue);
 		// sleep(1);
 		
 		detach(ue);
 		if(!ue.success)
 			continue;
 
-		sleep(1);
+		// sleep(1);
 	}
 	return NULL;
 }

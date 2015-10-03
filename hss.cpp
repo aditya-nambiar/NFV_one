@@ -10,7 +10,7 @@ HSS::HSS() {
 
 void HSS::handle_query_error() {
 
-	 if (query_res == 0) {
+	if (query_res == 0) {
 		cout << "ERROR: No rows fetched for this query - ";
 		cout << query << endl;
 		report_error(-1);

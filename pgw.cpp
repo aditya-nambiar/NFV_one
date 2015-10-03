@@ -189,12 +189,12 @@ void generate_ip_table() {
 	int host;
 	int i;
 	
-	g_ip_table.resize(MAX_IPS);
+	g_ip_table.resize(MAX_CONNS);
 	subnet = 1;
 	host = 3;
 
 	prefix = "172.16.";
-	for (i = 0; i < MAX_IPS; i++) {
+	for (i = 0; i < MAX_CONNS; i++) {
 		ip = prefix + to_string(subnet) + "." + to_string(host);
 		g_ip_table[i] = ip;
 		if(host == 254){

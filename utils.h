@@ -49,7 +49,7 @@
 
 using namespace std;
 
-#define MAX_CONNS 100000
+#define MAX_CONNS 10000
 #define BUF_SIZE 1024
 
 extern int g_reuse;
