@@ -44,13 +44,13 @@ void EnodeB::read_tun() {
 	report_error(status);
 	pkt.data_len = status;
 	pkt.curr_pos = 0;
-	cout<<"Read data from tun"<<endl;
 }
 
 void EnodeB::set_ue_num(){
 	struct ip *iphdr = allocate_ip_mem(IP_LEN);
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 
+	success = 1;
 	memmove(iphdr, pkt.data, IP_LEN * sizeof(uint8_t));
 	inet_ntop(AF_INET, &(iphdr->ip_src), ip_addr, INET_ADDRSTRLEN);
 	ue_ip.assign(ip_addr);
@@ -58,15 +58,11 @@ void EnodeB::set_ue_num(){
 	status = pthread_mutex_lock(&g_map_lock);
 	report_error(status, "Error in thread locking");
 
-	ue_num = g_ue_maptable[ue_ip];
-
 	if(g_ue_maptable.find(ue_ip) == g_ue_maptable.end()){
 		success = 0;
-
-		status = pthread_mutex_unlock(&g_map_lock);
-		report_error(status, "Error in thread unlocking");
-
-		return;
+	}
+	else{
+		ue_num = g_ue_maptable[ue_ip];
 	}
 
 	status = pthread_mutex_unlock(&g_map_lock);

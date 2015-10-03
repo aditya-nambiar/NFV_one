@@ -20,8 +20,9 @@ void PGWDlink::set_ue_num(){
 	struct ip *iphdr = allocate_ip_mem(IP_LEN);
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 
+	success = 1;
 	memmove(iphdr, pkt.data, IP_LEN * sizeof(uint8_t));
-	inet_ntop(AF_INET, &(iphdr->ip_src), ip_addr, INET_ADDRSTRLEN);
+	inet_ntop(AF_INET, &(iphdr->ip_dst), ip_addr, INET_ADDRSTRLEN);
 	ue_ip.assign(ip_addr);
 	
 	status = pthread_mutex_lock(&g_map_lock);
@@ -29,13 +30,10 @@ void PGWDlink::set_ue_num(){
 
 	if(g_ue_maptable.find(ue_ip) == g_ue_maptable.end()){
 		success = 0;
-
-		status = pthread_mutex_unlock(&g_map_lock);
-		report_error(status, "Error in thread unlocking");
-
-		return;
 	}
-	ue_num = g_ue_maptable[ue_ip];
+	else{
+		ue_num = g_ue_maptable[ue_ip];
+	}
 
 	status = pthread_mutex_unlock(&g_map_lock);
 	report_error(status, "Error in thread unlocking");
