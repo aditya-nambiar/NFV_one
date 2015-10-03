@@ -44,6 +44,7 @@ void EnodeB::read_tun() {
 	report_error(status);
 	pkt.data_len = status;
 	pkt.curr_pos = 0;
+	cout<<"Read data from tun"<<endl;
 }
 
 void EnodeB::set_ue_num(){
@@ -58,6 +59,15 @@ void EnodeB::set_ue_num(){
 	report_error(status, "Error in thread locking");
 
 	ue_num = g_ue_maptable[ue_ip];
+
+	if(g_ue_maptable.find(ue_ip) == g_ue_maptable.end()){
+		success = 0;
+
+		status = pthread_mutex_unlock(&g_map_lock);
+		report_error(status, "Error in thread unlocking");
+
+		return;
+	}
 
 	status = pthread_mutex_unlock(&g_map_lock);
 	report_error(status, "Error in thread unlocking");

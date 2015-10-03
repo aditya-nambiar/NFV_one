@@ -15,7 +15,7 @@ void setup_tun() {
 	system("sudo openvpn --rmtun --dev tun1");
 	system("sudo openvpn --mktun --dev tun1");
 	system("sudo ip link set tun1 up");
-	system("sudo ip addr add 182.168.100.1/16 dev tun1");
+	system("sudo ip addr add 172.16.0.1/16 dev tun1");
 }
 
 void* monitor_traffic(void *arg) {
@@ -48,6 +48,10 @@ void uplink_data_transfer(){
 
 	g_enodeb.read_tun();
 	g_enodeb.set_ue_num();
+	if(!g_enodeb.success){
+		return;
+	}
+
 	// if(g_ran_data[g_enodeb.ue_num].valid == true){
 		g_enodeb.make_uplink_data();
 		g_enodeb.send_sgw();

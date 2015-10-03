@@ -190,10 +190,10 @@ void generate_ip_table() {
 	int i;
 	
 	g_ip_table.resize(MAX_IPS);
-	subnet = 2;
+	subnet = 1;
 	host = 3;
 
-	prefix = "182.168.";
+	prefix = "172.16.";
 	for (i = 0; i < MAX_IPS; i++) {
 		ip = prefix + to_string(subnet) + "." + to_string(host);
 		g_ip_table[i] = ip;

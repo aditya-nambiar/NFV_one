@@ -157,6 +157,10 @@ void UE::recv_tun_data(){
 
 	if(ue_ip.size() == 0){
 		success = 0;
+
+		status = pthread_mutex_unlock(&g_arr_lock);
+		report_error(status, "Error in thread unlocking");	
+		
 		return;
 	}
 

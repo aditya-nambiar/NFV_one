@@ -30,8 +30,8 @@ void PGWDlink::set_ue_num(){
 	if(g_ue_maptable.find(ue_ip) == g_ue_maptable.end()){
 		success = 0;
 
-		status = pthread_mutex_lock(&g_map_lock);
-		report_error(status, "Error in thread locking");
+		status = pthread_mutex_unlock(&g_map_lock);
+		report_error(status, "Error in thread unlocking");
 
 		return;
 	}
