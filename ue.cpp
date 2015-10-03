@@ -155,6 +155,11 @@ void UE::recv_tun_data(){
 	ue_ip.assign(ip_addr);
 	g_ran_data[ue_num].valid = true;
 
+	if(ue_ip.size() == 0){
+		success = 0;
+		return;
+	}
+
 	status = pthread_mutex_unlock(&g_arr_lock);
 	report_error(status, "Error in thread unlocking");	
 
@@ -191,7 +196,7 @@ void UE::turn_up_interface(){
 
 	interface_name = "eth0:" + to_string(ue_num);
 
-	cmd = "sudo ifconfig " + interface_name + " " + ue_ip + "/16";
+	cmd = "sudo ifconfig " + interface_name + " " + ue_ip + "/8";
 	cout << cmd << endl;
 
 	system(cmd.c_str());

@@ -192,8 +192,8 @@ void MME::modify_session_req_to_sgw(){
 
 	to_sgw.set_server_details(g_mme_data[ue_num].sgw_port, g_mme_data[ue_num].sgw_addr.c_str());
 	to_sgw.pkt.add_metadata(type, subtype, ue_num);
-	to_sgw.pkt.add_data(g_mme_data[ue_num].enodeb_uteid);
 	to_sgw.pkt.add_gtpc_hdr(g_mme_data[ue_num].sgw_cteid);
+	to_sgw.pkt.add_data(g_mme_data[ue_num].enodeb_uteid);
 
 	status = pthread_mutex_unlock(&g_arr_lock);
 	report_error(status, "Error in thread unlocking");

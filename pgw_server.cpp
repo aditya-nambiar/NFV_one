@@ -13,6 +13,9 @@ void downlink_data_transfer(PGWDlink &pgw_dlink){
 
 	pgw_dlink.read_data();
 	pgw_dlink.set_ue_num();
+	if(!pgw_dlink.success){
+		return;
+	}
 	// if(g_pgw_data[pgw_dlink.ue_num].valid == true){
 		pgw_dlink.make_downlink_data();
 		pgw_dlink.send_sgw();			
