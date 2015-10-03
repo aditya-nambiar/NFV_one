@@ -155,6 +155,11 @@ void UE::recv_tun_data(){
 	ue_ip.assign(ip_addr);
 	g_ran_data[ue_num].valid = true;
 
+	if(ue_ip.size() == 0){
+		success = 0;
+		return;
+	}
+
 	status = pthread_mutex_unlock(&g_arr_lock);
 	report_error(status, "Error in thread unlocking");	
 

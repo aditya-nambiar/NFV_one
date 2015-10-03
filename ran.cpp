@@ -15,7 +15,7 @@ void setup_tun() {
 	system("sudo openvpn --rmtun --dev tun1");
 	system("sudo openvpn --mktun --dev tun1");
 	system("sudo ip link set tun1 up");
-	system("sudo ip addr add 192.168.100.1/16 dev tun1");
+	system("sudo ip addr add 182.168.100.1/16 dev tun1");
 }
 
 void* monitor_traffic(void *arg) {
