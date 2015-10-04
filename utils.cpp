@@ -27,7 +27,7 @@ string g_private_sink_addr = "172.16.0.2";
 // string g_pgw_addr = "192.168.1.76";
 // string g_pgw_dlink_addr = "192.168.1.76";
 // string g_public_sink_addr = "192.168.1.78";
-// string g_private_sink_addr = "192.168.100.2";
+// string g_private_sink_addr = "172.16.0.2";
 
 socklen_t g_addr_len = sizeof(sockaddr_in);
 
