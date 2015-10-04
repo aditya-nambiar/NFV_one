@@ -195,6 +195,11 @@ int main(int argc, char *argv[]) {
 	}
 	
 	free_ran_data();
+	g_run_dur = difftime(time(0), g_start_time);
 	cout << "Requested duration has ended. Finishing the program." << endl;
+	cout << "Total number of registrations is " << g_total_regs << endl;
+	cout << "Total time for registrations is " << g_total_regstime << endl;
+	cout << "Latency is " << ((double)g_total_regstime/g_total_regs)*1e-6 << endl;
+	cout << "Throughput is " << ((double)g_total_regs/g_run_dur) << endl;
 	return 0;
 }

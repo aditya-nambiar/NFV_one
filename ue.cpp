@@ -43,6 +43,7 @@ void UE::send_attach_req(){
 	type = 1;
 	subtype = 1;
 
+	start_time = Clock::now();
 	to_mme.pkt.add_metadata(type, subtype, ue_num);
 	to_mme.pkt.add_data(imsi);
 	to_mme.pkt.add_data(msisdn);
@@ -296,7 +297,20 @@ void UE::delete_session_data(){
 	}
 
 	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
+	stop_time = Clock::now();
+	time_diff_ms = std::chrono::duration_cast<microseconds>(stop_time - start_time);
+
+	status = pthread_mutex_lock(&g_time_lock);
 	report_error(status, "Error in thread locking");
+
+	g_total_regs++;
+	g_total_regstime += time_diff_ms.count();
+
+	status = pthread_mutex_unlock(&g_time_lock);
+	report_error(status, "Error in thread locking");
+
 }
 
 UE::~UE(){

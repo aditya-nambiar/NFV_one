@@ -6,6 +6,10 @@ pthread_mutex_t g_arr_lock = PTHREAD_MUTEX_INITIALIZER;
 unordered_map<string, int> g_ue_maptable;
 pthread_mutex_t g_map_lock = PTHREAD_MUTEX_INITIALIZER;
 
+int g_total_regs = 0;
+unsigned long long g_total_regstime = 0;
+pthread_mutex_t g_time_lock = PTHREAD_MUTEX_INITIALIZER;
+
 RANData::RANData(){
 
 	valid = false;

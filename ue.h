@@ -6,6 +6,9 @@
 #include "udp_client.h"
 #include "ran_data.h"
 
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::microseconds microseconds;
+
 struct UE {
 	int ue_num;
 	int type;
@@ -30,6 +33,10 @@ struct UE {
 	bool success;
 
 	string interface_name;
+
+	Clock::time_point	start_time;
+	Clock::time_point stop_time;
+	microseconds time_diff_ms;
 
 	UE(int&);
 
