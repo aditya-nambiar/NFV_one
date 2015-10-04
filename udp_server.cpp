@@ -25,6 +25,21 @@ void UDPServer::bind_server(int arg_server_port, const char *arg_server_addr) {
 	report_error(status);	
 }
 
+void UDPServer::write_data(struct sockaddr_in &client_sock_addr, Packet &pkt){
+
+	while(1){
+		status = sendto(server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
+		if(errno == EPERM){
+			errno = 0;
+			continue;
+		}
+		else{
+			break;
+		}
+	}
+	report_error(status);
+}
+
 void UDPServer::print_status(const char *server_name){
 	string arg;
 

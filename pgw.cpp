@@ -38,21 +38,36 @@ void PGW::set_metadata(){
 
 void PGW::set_sgw_details(int arg_ue_num){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	g_pgw_data[arg_ue_num].sgw_port = g_sgw1_port;
 	g_pgw_data[arg_ue_num].sgw_addr = g_sgw1_addr;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void PGW::store_create_session_data(){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	pkt.copy_data(g_pgw_data[ue_num].bearer_id);
 	pkt.copy_data(g_pgw_data[ue_num].sgw_cteid);
 	pkt.copy_data(g_pgw_data[ue_num].sgw_uteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void PGW::create_session_res_to_sgw(){
 
 	type = 1;
 	subtype = 3;
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
 
 	g_pgw_data[ue_num].pgw_cteid = generate_cteid(ue_num);
 	g_pgw_data[ue_num].pgw_uteid = generate_uteid(ue_num);
@@ -67,26 +82,34 @@ void PGW::create_session_res_to_sgw(){
 
 	cout << "Assigned IP address is **" << g_pgw_data[ue_num].ue_ip << "** for UE - " << ue_num << endl;
 
-	status = sendto(g_pgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);		
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
+	g_pgw_server.write_data(client_sock_addr, pkt);
 
 	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;
 }
 
 void PGW::add_map_entry(){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	if(g_pgw_data[ue_num].valid == true){
 		string key = g_pgw_data[ue_num].ue_ip;
 		int value = g_pgw_data[ue_num].ue_num;
 
-		status = pthread_mutex_lock(&g_lock);
+		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
 		g_ue_maptable[key] = value;
 
-		status = pthread_mutex_unlock(&g_lock);
+		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
 	}
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void PGW::make_uplink_data(){
@@ -117,28 +140,41 @@ void PGW::delete_session_res_to_sgw(){
 
 	cout << "Delete session request has been successful at PGW for UE - " << ue_num << endl;	
 	pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	pkt.add_gtpc_hdr(g_pgw_data[ue_num].sgw_cteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
 	pkt.add_data(reply);
 
-	status = sendto(g_pgw_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);		
+	g_pgw_server.write_data(client_sock_addr, pkt);
 }
 
 void PGW::delete_session_data(){
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
 
 	g_pgw_data[ue_num].valid = false;
 
 	if(g_pgw_data[ue_num].valid == false){
 		string key = g_pgw_data[ue_num].ue_ip;
 
-		status = pthread_mutex_lock(&g_lock);
+		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
-		// g_ue_maptable.erase(key); // Commented this because data validity is checked using valid bit while sending data
+		// g_ue_maptable.erase(key); // Commented to ensure leftover traffic also gets sent
 
-		status = pthread_mutex_unlock(&g_lock);
+		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
 	}
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 PGW::~PGW() {
@@ -149,13 +185,24 @@ PGW::~PGW() {
 void generate_ip_table() {
 	string prefix;
 	string ip;
+	int subnet;
+	int host;
 	int i;
 	
-	g_ip_table.resize(MAX_IPS);
-	
-	prefix = "192.168.100.";
-	for (i = 0; i < MAX_IPS; i++) {
-		ip = prefix + to_string(i+3);
+	g_ip_table.resize(MAX_CONNS);
+	subnet = 1;
+	host = 3;
+
+	prefix = "172.16.";
+	for (i = 0; i < MAX_CONNS; i++) {
+		ip = prefix + to_string(subnet) + "." + to_string(host);
 		g_ip_table[i] = ip;
+		if(host == 254){
+			subnet++;
+			host = 3;
+		}
+		else{
+			host++;
+		}		
 	}
 }

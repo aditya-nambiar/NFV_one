@@ -15,7 +15,7 @@ void setup_tun() {
 	system("sudo openvpn --rmtun --dev tun1");
 	system("sudo openvpn --mktun --dev tun1");
 	system("sudo ip link set tun1 up");
-	system("sudo ip addr add 192.168.100.1/24 dev tun1");
+	system("sudo ip addr add 172.16.0.1/16 dev tun1");
 }
 
 void* monitor_traffic(void *arg) {
@@ -48,20 +48,24 @@ void uplink_data_transfer(){
 
 	g_enodeb.read_tun();
 	g_enodeb.set_ue_num();
-	if(g_ran_data[g_enodeb.ue_num].valid == true){
+	if(!g_enodeb.success){
+		return;
+	}
+
+	// if(g_ran_data[g_enodeb.ue_num].valid == true){
 		g_enodeb.make_uplink_data();
 		g_enodeb.send_sgw();
-	}
+	// }
 }
 
 void downlink_data_transfer(){
 
 	g_enodeb.recv_sgw();
 	g_enodeb.set_metadata();
-	if(g_ran_data[g_enodeb.ue_num].valid == true){
+	// if(g_ran_data[g_enodeb.ue_num].valid == true){
 		g_enodeb.make_downlink_data();
 		g_enodeb.write_tun();		
-	}
+	// }
 }
 
 void* generate_traffic(void *arg) {
@@ -74,18 +78,27 @@ void* generate_traffic(void *arg) {
 	ue.set_mme_details();
 	ue.startup_mme_client();
 	while (1) {
-		authenticate(ue);
-		if(!ue.success)
-			continue;
-		setup_tunnel(ue);
-		send_traffic(ue);
-		sleep(1);
-		detach(ue);
-		sleep(1);
 		time_check(g_start_time, g_req_duration, time_exceeded);
 		if (time_exceeded) {
 			break;
 		}
+
+		authenticate(ue);
+		if(!ue.success)
+			continue;
+
+		setup_tunnel(ue);
+		if(!ue.success)
+			continue;
+
+		// send_traffic(ue);
+		// sleep(1);
+		
+		detach(ue);
+		if(!ue.success)
+			continue;
+
+		// sleep(1);
 	}
 	return NULL;
 }
@@ -94,22 +107,39 @@ void authenticate(UE &ue) {
 
 	ue.send_attach_req();
 	ue.recv_autn_req();
+	if(!ue.success){
+		return;
+	}
 	ue.set_autn_res();
 	ue.send_autn_res();
 	ue.recv_autn_check();
+	if(!ue.success){
+		return;
+	}
 }
 
 void setup_tunnel(UE &ue){
 
 	set_tun_data(ue);
 	ue.send_tun_data();
+	ue.set_sgw_details();
 	ue.recv_tun_data();
+	if(!ue.success){
+		return;
+	}
 	ue.add_map_entry();
 }
 
 void set_tun_data(UE &ue){
+	int status;
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
 
 	g_ran_data[ue.ue_num].enodeb_uteid = g_enodeb.generate_uteid(ue.ue_num);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void send_traffic(UE &ue) {
@@ -126,6 +156,9 @@ void detach(UE &ue) {
 	ue.recv_detach_res();
 	if(ue.success == 1){
 		ue.delete_session_data();
+	}
+	else{
+		return;
 	}
 }
 
@@ -162,6 +195,11 @@ int main(int argc, char *argv[]) {
 	}
 	
 	free_ran_data();
+	g_run_dur = difftime(time(0), g_start_time);
 	cout << "Requested duration has ended. Finishing the program." << endl;
+	cout << "Total number of registrations is " << g_total_regs << endl;
+	cout << "Total time for registrations is " << g_total_regstime << endl;
+	cout << "Latency is " << ((double)g_total_regstime/g_total_regs)*1e-6 << endl;
+	cout << "Throughput is " << ((double)g_total_regs/g_run_dur) << endl;
 	return 0;
 }

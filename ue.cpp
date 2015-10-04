@@ -3,9 +3,9 @@
 UE::UE(int &arg_ue_num) {
 
 	ue_num = arg_ue_num;
-	g_ran_data[ue_num].key = generate_key(ue_num);
-	g_ran_data[ue_num].imsi = g_ran_data[ue_num].key * 1000;
-	g_ran_data[ue_num].msisdn = 9000000000 + g_ran_data[ue_num].key;
+	key = generate_key(ue_num);
+	imsi = key * 1000;
+	msisdn = 9000000000 + key;
 }
 
 unsigned long long UE::generate_key(int &ue_num) {
@@ -15,14 +15,27 @@ unsigned long long UE::generate_key(int &ue_num) {
 
 void UE::set_mme_details(){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	g_ran_data[ue_num].mme_port = g_mme_port;
 	g_ran_data[ue_num].mme_addr = g_mme_addr;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
 }
 
 void UE::startup_mme_client(){
 
 	to_mme.bind_client();
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_mme.set_server_details(g_ran_data[ue_num].mme_port, g_ran_data[ue_num].mme_addr.c_str());
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 }
 
 void UE::send_attach_req(){
@@ -30,16 +43,21 @@ void UE::send_attach_req(){
 	type = 1;
 	subtype = 1;
 
+	start_time = Clock::now();
 	to_mme.pkt.add_metadata(type, subtype, ue_num);
-	to_mme.pkt.add_data(g_ran_data[ue_num].imsi);
-	to_mme.pkt.add_data(g_ran_data[ue_num].msisdn);
+	to_mme.pkt.add_data(imsi);
+	to_mme.pkt.add_data(msisdn);
 	to_mme.write_data();
 }
 
 void UE::recv_autn_req(){
 
 	cout<<"Waiting to read data_1 : UE - "<<ue_num<<endl;
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	to_mme.pkt.copy_data(autn_num);
 	to_mme.pkt.copy_data(rand_num);
@@ -48,7 +66,7 @@ void UE::recv_autn_req(){
 
 unsigned long long UE::set_autn_res() {
 
-	autn_res = (autn_num * g_ran_data[ue_num].key) + (rand_num * (g_ran_data[ue_num].key + 1));
+	autn_res = (autn_num * key) + (rand_num * (key + 1));
 }
 
 void UE::send_autn_res(){
@@ -66,7 +84,11 @@ void UE::recv_autn_check(){
 	int len;
 
 	cout<<"Waiting to read data_2 : UE - "<<ue_num<<endl;
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	len = (to_mme.pkt.data_len - to_mme.pkt.curr_pos);
 	to_mme.pkt.copy_data(res, len);
@@ -90,21 +112,61 @@ void UE::send_tun_data(){
 	subtype = 3;
 
 	to_mme.pkt.add_metadata(type, subtype, ue_num);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	to_mme.pkt.add_data(g_ran_data[ue_num].enodeb_uteid);
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
+
 	to_mme.write_data();
+}
+
+void UE::set_sgw_details(){
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
+	g_ran_data[ue_num].sgw_port = g_sgw1_port;
+	g_ran_data[ue_num].sgw_addr = g_sgw1_addr;
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
 }
 
 void UE::recv_tun_data(){
 	char *ip_addr = allocate_str_mem(INET_ADDRSTRLEN);
 	int len = INET_ADDRSTRLEN;
 
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
-	to_mme.pkt.copy_data(g_ran_data[ue_num].sgw_uteid);
+
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
+	to_mme.pkt.copy_data(g_ran_data[ue_num].sgw_uteid);	
 	to_mme.pkt.copy_data(ip_addr, len);
-	
-	g_ran_data[ue_num].ue_ip.assign(ip_addr);
+
+	ue_ip.assign(ip_addr);
 	g_ran_data[ue_num].valid = true;
+
+	if(ue_ip.size() == 0){
+		success = 0;
+
+		status = pthread_mutex_unlock(&g_arr_lock);
+		report_error(status, "Error in thread unlocking");	
+		
+		return;
+	}
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");	
 
 	cout << "Tunnel is formed successfully from UE to PGW for UE - " << ue_num << endl;
 
@@ -113,18 +175,25 @@ void UE::recv_tun_data(){
 
 void UE::add_map_entry(){
 
-	if(g_ran_data[ue_num].valid == true){
-		string key = g_ran_data[ue_num].ue_ip;
-		int value = g_ran_data[ue_num].ue_num;
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
 
-		status = pthread_mutex_lock(&g_lock);
+	if(g_ran_data[ue_num].valid == true){
+
+		string key = ue_ip;
+		int value = ue_num;
+
+		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
 		g_ue_maptable[key] = value;
 
-		status = pthread_mutex_unlock(&g_lock);
+		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
 	}
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
 }
 
 void UE::turn_up_interface(){
@@ -132,7 +201,7 @@ void UE::turn_up_interface(){
 
 	interface_name = "eth0:" + to_string(ue_num);
 
-	cmd = "sudo ifconfig " + interface_name + " " + g_ran_data[ue_num].ue_ip + "/16";
+	cmd = "sudo ifconfig " + interface_name + " " + ue_ip + "/8";
 	cout << cmd << endl;
 
 	system(cmd.c_str());
@@ -155,7 +224,7 @@ void UE::send_iperf3_traffic(){
 	mtu = " -M 500";
 	dur = " -t 1";
 
-	cmd = "iperf3 -B " + g_ran_data[ue_num].ue_ip + " -c " + sink_addr + " -p " + to_string(sink_port) + rate + mtu + dur;
+	cmd = "iperf3 -B " + ue_ip + " -c " + sink_addr + " -p " + to_string(sink_port) + rate + mtu + dur;
 	cout << cmd << endl;
 	
 	system(cmd.c_str());
@@ -168,7 +237,7 @@ void UE::turn_down_interface(){
 	cmd = "sudo ifconfig " + interface_name + " down";
 	cout << cmd << endl;
 
-	system(cmd.c_str());
+	// system(cmd.c_str());
 	cout << "Interface turned down for UE - " << ue_num << endl;	
 }
 
@@ -185,7 +254,11 @@ void UE::recv_detach_res(){
 	char *res = allocate_str_mem(BUF_SIZE);
 	int len;
 
-	to_mme.read_data();
+	to_mme.read_data(success);
+	if(!success){
+		return;
+	}
+
 	to_mme.pkt.copy_metadata(type, subtype, ue_num);
 	len = (to_mme.pkt.data_len - to_mme.pkt.curr_pos);
 	to_mme.pkt.copy_data(res, len);
@@ -206,19 +279,38 @@ void UE::recv_detach_res(){
 
 void UE::delete_session_data(){
 
+	status = pthread_mutex_lock(&g_arr_lock);
+	report_error(status, "Error in thread locking");
+
 	g_ran_data[ue_num].valid = false;
 
 	if(g_ran_data[ue_num].valid == false){
-		string key = g_ran_data[ue_num].ue_ip;
+		string key = ue_ip;
 
-		status = pthread_mutex_lock(&g_lock);
+		status = pthread_mutex_lock(&g_map_lock);
 		report_error(status, "Error in thread locking");
 
 		// g_ue_maptable.erase(key); // Commented this because data validity is checked using valid bit while sending data
 
-		status = pthread_mutex_unlock(&g_lock);
+		status = pthread_mutex_unlock(&g_map_lock);
 		report_error(status, "Error in thread unlocking");
 	}
+
+	status = pthread_mutex_unlock(&g_arr_lock);
+	report_error(status, "Error in thread unlocking");
+
+	stop_time = Clock::now();
+	time_diff_ms = std::chrono::duration_cast<microseconds>(stop_time - start_time);
+
+	status = pthread_mutex_lock(&g_time_lock);
+	report_error(status, "Error in thread locking");
+
+	g_total_regs++;
+	g_total_regstime += time_diff_ms.count();
+
+	status = pthread_mutex_unlock(&g_time_lock);
+	report_error(status, "Error in thread locking");
+
 }
 
 UE::~UE(){

@@ -1,6 +1,7 @@
 #include "mme_data.h"
 
 struct MMEData *g_mme_data;
+pthread_mutex_t g_arr_lock = PTHREAD_MUTEX_INITIALIZER;
 
 MMEData::MMEData(){
 

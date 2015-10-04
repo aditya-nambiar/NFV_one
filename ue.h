@@ -6,16 +6,24 @@
 #include "udp_client.h"
 #include "ran_data.h"
 
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::microseconds microseconds;
+
 struct UE {
 	int ue_num;
 	int type;
 	int subtype;
 	
+	unsigned long long key;
+	unsigned long long imsi;
+	unsigned long long msisdn;
+	string ue_ip;
+
+	UDPClient to_mme;
+
 	unsigned long long autn_num;
 	unsigned long long rand_num;
 	unsigned long long autn_res;
-
-	UDPClient to_mme;
 
 	int sink_port;
 	string sink_addr;
@@ -25,6 +33,10 @@ struct UE {
 	bool success;
 
 	string interface_name;
+
+	Clock::time_point	start_time;
+	Clock::time_point stop_time;
+	microseconds time_diff_ms;
 
 	UE(int&);
 
@@ -40,6 +52,7 @@ struct UE {
 	void recv_autn_check();
 
 	void send_tun_data();
+	void set_sgw_details();
 	void recv_tun_data();
 	void add_map_entry();
 

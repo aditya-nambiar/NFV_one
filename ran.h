@@ -14,6 +14,7 @@ extern EnodeB g_enodeb;
 extern int g_total_connections;
 extern double g_req_duration;
 extern time_t g_start_time;
+unsigned long long g_run_dur;
 
 extern vector<int> g_ue_num;
 extern pthread_t g_mon_tid;

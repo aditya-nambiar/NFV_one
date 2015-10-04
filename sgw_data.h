@@ -30,6 +30,7 @@ struct SGWData{
 };
 
 extern struct SGWData *g_sgw_data;
+extern pthread_mutex_t g_arr_lock; // To lock g_sgw_data
 
 void setup_sgw_data();
 void free_sgw_data();

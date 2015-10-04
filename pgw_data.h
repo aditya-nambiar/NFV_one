@@ -24,9 +24,10 @@ struct PGWData{
 };
 
 extern struct PGWData *g_pgw_data;
+extern pthread_mutex_t g_arr_lock; // To lock g_sgw_data
 
-extern unordered_map<string, int> g_ue_maptable; // Data race cannot occur because of usage of Mutex lock
-extern pthread_mutex_t g_lock; // To lock g_ue_maptable
+extern unordered_map<string, int> g_ue_maptable; 
+extern pthread_mutex_t g_map_lock; // To lock g_ue_maptable
 
 void setup_pgw_data();
 void free_pgw_data();

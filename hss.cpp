@@ -10,7 +10,7 @@ HSS::HSS() {
 
 void HSS::handle_query_error() {
 
-	 if (query_res == 0) {
+	if (query_res == 0) {
 		cout << "ERROR: No rows fetched for this query - ";
 		cout << query << endl;
 		report_error(-1);
@@ -84,8 +84,8 @@ void HSS::send_res() {
 	pkt.add_data(ue_data.autn_num);
 	pkt.add_data(ue_data.rand_num);
 	pkt.add_data(ue_data.autn_xres);
-	status = sendto(g_hss_server.server_socket, pkt.data, pkt.data_len, 0, (sockaddr*)&client_sock_addr, g_addr_len);
-	report_error(status);			
+
+	g_hss_server.write_data(client_sock_addr, pkt);
 }
 
 HSS::~HSS() {
