@@ -31,7 +31,7 @@ string g_private_sink_addr = "172.16.0.2";
 
 socklen_t g_addr_len = sizeof(sockaddr_in);
 
-struct timeval g_timeout = {5, 0};
+struct timeval g_timeout = {1, 0};
 
 // int g_sgw2_port = 7100;
 // int g_sgw3_port = 7200;
